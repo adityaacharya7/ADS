@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large Datasets / Data files
+*.csv
+twcs.csv
+twcs_cleaned.csv
+
+# Model weights & large artifacts (optional, uncomment if not tracked)
+# *.joblib
+# *.pkl
+
+# Environments & Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

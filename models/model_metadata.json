@@ -1,0 +1,41 @@
+{
+    "best_model": "LightGBM",
+    "sample_size": 100000,
+    "train_samples": 80000,
+    "test_samples": 20000,
+    "vocab_size": 10000,
+    "classes": [
+        "Anger / Frustration",
+        "Disappointment / Sadness",
+        "Fear / Anxiety",
+        "Joy / Gratitude",
+        "Neutral / Inquiry"
+    ],
+    "benchmark": [
+        {
+            "Model": "Logistic Regression",
+            "Accuracy": 0.9217,
+            "Weighted F1": 0.9205594280023118,
+            "Precision": 0.9224184828114932,
+            "Recall": 0.9217,
+            "Training Time (s)": 6.021395921707153
+        },
+        {
+            "Model": "LightGBM",
+            "Accuracy": 0.99545,
+            "Weighted F1": 0.9953781732605589,
+            "Precision": 0.9954282125380263,
+            "Recall": 0.99545,
+            "Training Time (s)": 24.25448489189148
+        },
+        {
+            "Model": "XGBoost",
+            "Accuracy": 0.98965,
+            "Weighted F1": 0.9895532811760066,
+            "Precision": 0.9896260800807472,
+            "Recall": 0.98965,
+            "Training Time (s)": 91.10486102104187
+        }
+    ],
+    "training_time_seconds": 132.44991064071655
+}

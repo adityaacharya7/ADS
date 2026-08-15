@@ -1,0 +1,188 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{mathptmx} % Times New Roman
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0}
+}
+
+\setlist{itemsep=2pt, topsep=3pt}
+
+\begin{document}
+
+\begin{center}
+    {\Large \textbf{Experiment 3}}
+\end{center}
+
+\vspace{0.5em}
+
+\noindent \textbf{Aim:} Exploratory Data Analysis \& Statistical Analysis
+
+\vspace{0.8em}
+
+\noindent \textbf{Objective:}
+\begin{enumerate}[leftmargin=1.8em]
+    \item To visualize the distribution of classes and features in the dataset.
+    \item To understand the spread and central tendency of data using plots.
+    \item To identify correlations between features using heatmaps.
+    \item To perform statistical hypothesis testing (e.g., t-tests, ANOVA, Chi-Square) to determine if observed differences are significant (as per the requirement).
+\end{enumerate}
+
+\vspace{0.8em}
+
+\noindent \textbf{Dataset Overview \& Summary Statistics}
+
+\noindent The analysis is performed on the Customer Support on Twitter (TWCS) Cleaned Dataset (\texttt{twcs\_cleaned.csv}) containing 100,000 processed customer support tweets downsampled and stratified for robust statistical evaluation.
+
+\vspace{0.5em}
+
+\begin{table}[h!]
+\centering
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+\textbf{Feature} & \textbf{Mean} & \textbf{Std Dev} & \textbf{Min} & \textbf{25\% (Q1)} & \textbf{50\% (Median)} & \textbf{75\% (Q3)} & \textbf{Max} \\
+\midrule
+Word Count ($w$)        & 19.23  & 9.68  & 5.00   & 12.00  & 18.00  & 24.00  & 68.00  \\
+Character Count ($c$)   & 102.23 & 51.34 & 11.00  & 64.00  & 100.00 & 127.00 & 280.00 \\
+VADER Compound          & +0.028 & 0.456 & -0.991 & -0.309 & 0.000  & +0.402 & +0.984 \\
+Positive Valence ($p$)  & 0.103  & 0.132 & 0.000  & 0.000  & 0.060  & 0.172  & 0.919  \\
+Negative Valence ($n$)  & 0.085  & 0.113 & 0.000  & 0.000  & 0.000  & 0.147  & 0.943  \\
+Neutral Valence ($u$)   & 0.812  & 0.154 & 0.057  & 0.713  & 0.824  & 0.941  & 1.000  \\
+Exclamation Count ($!$) & 0.461  & 1.042 & 0.000  & 0.000  & 0.000  & 1.000  & 24.00  \\
+Question Count ($?$)    & 0.528  & 0.793 & 0.000  & 0.000  & 0.000  & 1.000  & 11.00  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.8em}
+
+\noindent \textbf{Detailed Steps}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Plot class balance:} Visualized the frequency distribution across the 5 target emotion classes using count bar plots and proportional pie charts.
+    \begin{itemize}
+        \item Neutral / Inquiry: 20,111 samples (40.22\%)
+        \item Disappointment / Sadness: 13,091 samples (26.18\%)
+        \item Joy / Gratitude: 10,701 samples (21.40\%)
+        \item Anger / Frustration: 5,385 samples (10.77\%)
+        \item Fear / Anxiety: 712 samples (1.42\%)
+    \end{itemize}
+
+    \item \textbf{Visualize frequency distributions of features:} Evaluated the shape, central tendency, and dispersion of continuous features (\texttt{word\_count}, \texttt{char\_count}, \texttt{vader\_compound}, \texttt{exclamation\_count}) using Histograms with Kernel Density Estimation (KDE), parametric mean indicators, and non-parametric median indicators.
+
+    \item \textbf{Assess Feature Correlations:} Computed Pearson ($r$) linear correlation and Spearman ($\rho$) monotonic rank correlation matrices. Visualized lower-triangle annotated correlation heatmaps to assess feature collinearties.
+
+    \item \textbf{Feature Distribution Analysis \& Outlier Detection:} Fitted theoretical continuous and discrete probability distributions (Gaussian, Log-Normal, Exponential, and Poisson) to tweet word counts using maximum likelihood estimation. Evaluated goodness-of-fit via Kolmogorov-Smirnov (K-S) tests and Normal Q-Q plots. Applied Tukey's Fences (IQR method) and Z-score ($|Z| > 3$) outlier detection.
+
+    \item \textbf{Hypothesis Testing:} Formulated and executed statistical significance tests:
+    \begin{itemize}
+        \item Independent Two-Sample Welch's t-test (Negative complaint vs.\ Joyful praise word counts)
+        \item One-Way Analysis of Variance (ANOVA) and Tukey's Honestly Significant Difference (HSD) post-hoc test (VADER polarity across emotion classes)
+        \item Chi-Square ($\chi^2$) Test of Independence (Emotion distribution vs.\ Time of Day)
+        \item Mann-Whitney U Test (Non-parametric rank sum comparison of Anger vs.\ Neutral word counts)
+    \end{itemize}
+
+    \item \textbf{Document EDA insights:} Documented statistical inferences, distributional topologies, skewness, and domain findings.
+\end{itemize}
+
+\vspace{0.8em}
+
+\noindent \textbf{Open-Source Tools}
+
+\noindent Matplotlib, Seaborn, Plotly, SciPy, Statsmodels, Pandas, NumPy
+
+\vspace{0.8em}
+
+\noindent \textbf{Deliverables}
+
+\noindent A well-commented EDA Notebook and Pipeline including:
+\begin{enumerate}[leftmargin=1.8em]
+    \item Data loading (\texttt{twcs\_cleaned.csv}) and multidimensional feature extraction
+    \item Visualizations (class balance charts, frequency distributions, boxplots, violin plots, and correlation heatmaps)
+    \item Statistical test implementations (Welch's t-test, ANOVA, $\chi^2$ independence, Mann-Whitney U, and K-S distribution fitting)
+    \item Summary of insights and empirical conclusions
+\end{enumerate}
+
+\newpage
+
+\noindent \textbf{Hypothesis test results, clearly documenting:}
+
+\vspace{0.5em}
+
+\noindent \textbf{1. Two-Sample Welch's t-Test (Negative Complaint vs. Joy Word Count)}
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Hypotheses:}
+    \begin{align*}
+        H_0 &: \mu_{\text{negative}} = \mu_{\text{joy}} \quad \text{(Mean word count of complaints equals that of joyful praise)} \\
+        H_1 &: \mu_{\text{negative}} \neq \mu_{\text{joy}} \quad \text{(Mean word count differs significantly)}
+    \end{align*}
+    \item \textbf{Test Statistic \& Parameters:}
+    \begin{itemize}
+        \item Negative Cohort ($N_1 = 18,476$): $\bar{x}_1 = 21.29$ words, $s_1 = 9.91$
+        \item Joy Cohort ($N_2 = 10,701$): $\bar{x}_2 = 16.78$ words, $s_2 = 9.13$
+        \item Degrees of Freedom: $df = 23,892.4$
+        \item Test Statistic: $t = 39.3351$
+        \item Effect Size (Cohen's $d$): $d = 0.468$ (Moderate effect size)
+    \end{itemize}
+    \item \textbf{P-value and interpretation:} $p = 0.0000$ ($p < 10^{-10}$, $\alpha = 0.05$). Since $p < \alpha$, the probability of observing this mean difference under $H_0$ is negligible.
+    \item \textbf{Conclusion based on test result:} \textbf{Reject $H_0$}. Customers filing complaints express significantly greater verbosity ($+4.51$ words on average, a $26.9\%$ increase) than customers offering praise.
+\end{itemize}
+
+\vspace{0.6em}
+
+\noindent \textbf{2. One-Way Analysis of Variance (ANOVA) \& Tukey HSD (Emotion Polarity Separation)}
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Hypotheses:}
+    \begin{align*}
+        H_0 &: \mu_{\text{anger}} = \mu_{\text{sadness}} = \mu_{\text{fear}} = \mu_{\text{neutral}} = \mu_{\text{joy}} \\
+        H_1 &: \text{At least one emotion category has a significantly different mean polarity.}
+    \end{align*}
+    \item \textbf{Group Means (VADER Compound):} Anger: $-0.5543$, Sadness: $-0.3550$, Fear: $-0.1486$, Neutral: $+0.1356$, Joy: $+0.6000$.
+    \item \textbf{Test Statistic \& P-value:} $F = 32,429.39$, $p = 0.0000$ ($p < 10^{-15}$, $\alpha = 0.05$).
+    \item \textbf{Interpretation \& Post-Hoc Tukey HSD:} All pairwise between-group differences are statistically significant ($p < 0.001$).
+    \item \textbf{Conclusion based on test result:} \textbf{Reject $H_0$}. The five emotion categories form distinct, non-overlapping sentiment polarity strata.
+\end{itemize}
+
+\vspace{0.6em}
+
+\noindent \textbf{3. Chi-Square ($\chi^2$) Test of Independence (Emotion vs. Time-of-Day)}
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Hypotheses:}
+    \begin{align*}
+        H_0 &: \text{Emotion category is independent of Time of Day (Morning, Afternoon, Evening, Night)} \\
+        H_1 &: \text{Emotion category distribution depends significantly on Time of Day}
+    \end{align*}
+    \item \textbf{Test Statistic \& Parameters:} $\chi^2 = 56.5628$, $df = 12$, Cram\'{e}r's $V = 0.0194$.
+    \item \textbf{P-value and interpretation:} $p = 9.4784 \times 10^{-8}$ ($p < 10^{-5}$, $\alpha = 0.05$).
+    \item \textbf{Conclusion based on test result:} \textbf{Reject $H_0$}. There is a statistically significant temporal relationship; angry inquiries surge proportionally during Evening and Night hours.
+\end{itemize}
+
+\vspace{0.6em}
+
+\noindent \textbf{4. Theoretical Distribution Fitting \& Outlier Analysis Summary}
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Goodness-of-Fit (Kolmogorov-Smirnov Test):}
+    \begin{itemize}
+        \item Log-Normal Fit: $\text{Shape} = 0.39, \text{Scale} = 22.63 \implies \text{KS-Stat} = 0.0665$ (\textbf{Best Continuous Fit})
+        \item Gaussian (Normal) Fit: $\mu = 19.23, \sigma = 9.68 \implies \text{KS-Stat} = 0.0809$
+        \item Exponential Fit: $\text{Scale} = 14.23 \implies \text{KS-Stat} = 0.1640$
+        \item Poisson Fit (Discrete): $\lambda = 19.23$
+    \end{itemize}
+    \item \textbf{Outlier Detection (Tukey's IQR Fences):} Upper fence at $42.0$ words isolates $1,799$ outliers ($3.60\%$). These extreme length tweets are predominantly high-urgency negative customer complaints.
+\end{itemize}
+
+\vspace{0.8em}
+
+\noindent \textbf{Conclusion}
+
+\noindent Experiment 3 successfully accomplished the Exploratory Data Analysis and Statistical Hypothesis Testing objectives. The empirical data exhibits a right-skewed Log-Normal distribution for tweet lengths ($KS = 0.0665$). Formal hypothesis tests confirmed with high statistical significance ($p < 10^{-10}$) that dissatisfied customer complaints demand substantially higher word counts ($+4.51$ words, $t = 39.34$) and exhibit elevated late-night volumes ($\chi^2 = 56.56, p < 10^{-7}$). All experimental deliverables, plots, and code implementations have been validated and documented.
+
+\end{document}

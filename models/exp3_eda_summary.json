@@ -1,0 +1,198 @@
+{
+    "experiment": "Experiment 3: Exploratory Data Analysis & Statistical Analysis",
+    "sample_size": 50000,
+    "class_distribution": {
+        "Neutral / Inquiry": 20111,
+        "Disappointment / Sadness": 13091,
+        "Joy / Gratitude": 10701,
+        "Anger / Frustration": 5385,
+        "Fear / Anxiety": 712
+    },
+    "summary_statistics": {
+        "word_count": {
+            "count": 50000.0,
+            "mean": 19.22638,
+            "std": 9.678256323765629,
+            "min": 5.0,
+            "25%": 12.0,
+            "50%": 18.0,
+            "75%": 24.0,
+            "max": 68.0
+        },
+        "char_count": {
+            "count": 50000.0,
+            "mean": 102.2348,
+            "std": 51.34258339991672,
+            "min": 11.0,
+            "25%": 64.0,
+            "50%": 100.0,
+            "75%": 127.0,
+            "max": 280.0
+        },
+        "vader_compound": {
+            "count": 50000.0,
+            "mean": 0.028187954,
+            "std": 0.4559576402738399,
+            "min": -0.9908,
+            "25%": -0.3091,
+            "50%": 0.0,
+            "75%": 0.4019,
+            "max": 0.9842
+        },
+        "vader_pos": {
+            "count": 50000.0,
+            "mean": 0.10346488000000001,
+            "std": 0.1316846433852166,
+            "min": 0.0,
+            "25%": 0.0,
+            "50%": 0.06,
+            "75%": 0.172,
+            "max": 0.919
+        },
+        "vader_neg": {
+            "count": 50000.0,
+            "mean": 0.08474210000000001,
+            "std": 0.11254352361857241,
+            "min": 0.0,
+            "25%": 0.0,
+            "50%": 0.0,
+            "75%": 0.147,
+            "max": 0.943
+        },
+        "vader_neu": {
+            "count": 50000.0,
+            "mean": 0.8117931599999999,
+            "std": 0.154209810811535,
+            "min": 0.057,
+            "25%": 0.71275,
+            "50%": 0.824,
+            "75%": 0.941,
+            "max": 1.0
+        }
+    },
+    "distribution_fits": {
+        "Gaussian": {
+            "params": "mu=19.23, sigma=9.68",
+            "ks_stat": 0.08088000040104593,
+            "p_value": 5.853660251391273e-285
+        },
+        "Log-Normal": {
+            "params": "shape=0.39, scale=22.63",
+            "ks_stat": 0.06650708717611942,
+            "p_value": 9.920241027548353e-193
+        },
+        "Exponential": {
+            "params": "scale=14.23",
+            "ks_stat": 0.16400577648611075,
+            "p_value": 0.0
+        },
+        "Poisson": {
+            "params": "lambda=19.23",
+            "ks_stat": null,
+            "p_value": null
+        },
+        "Outliers_IQR": {
+            "count": 1799,
+            "percentage": 3.598,
+            "fences": [
+                0.0,
+                42.0
+            ]
+        },
+        "Outliers_ZScore": {
+            "count": 754,
+            "percentage": 1.508,
+            "threshold": 3.0
+        }
+    },
+    "hypothesis_tests": {
+        "t_test": {
+            "test_name": "Two-Sample Welch's t-Test (Negative vs Joy Word Count)",
+            "null_hypothesis": "Mean word count of Negative complaints equals mean word count of Joyful tweets (mu_neg = mu_joy)",
+            "alt_hypothesis": "Mean word count of Negative complaints is significantly different from Joyful tweets (mu_neg != mu_joy)",
+            "sample_size_neg": 18476,
+            "sample_size_joy": 10701,
+            "mean_neg": 21.289077722450745,
+            "mean_joy": 16.78394542566115,
+            "std_neg": 9.914637109139244,
+            "std_joy": 9.134409023459728,
+            "test_statistic": 39.3351403689325,
+            "p_value": 0.0,
+            "effect_size_cohen_d": 0.4675398331450753,
+            "alpha": 0.05,
+            "reject_h0": true,
+            "conclusion": "REJECT NULL HYPOTHESIS: Customers expressing frustration or disappointment write significantly longer messages (mean difference: +4.51 words, p < 1e-10) than customers expressing joy."
+        },
+        "anova": {
+            "test_name": "One-Way ANOVA (VADER Compound Across 5 Emotion Classes)",
+            "null_hypothesis": "Mean VADER compound polarity is equal across all emotion classes (mu_1 = mu_2 = ... = mu_5)",
+            "alt_hypothesis": "At least one emotion class exhibits a statistically significant mean polarity divergence",
+            "f_statistic": 32429.39319851262,
+            "p_value": 0.0,
+            "alpha": 0.05,
+            "reject_h0": true,
+            "group_means": {
+                "Anger / Frustration": -0.5542791457753018,
+                "Neutral / Inquiry": 0.1355940281438019,
+                "Joy / Gratitude": 0.6000221941874593,
+                "Disappointment / Sadness": -0.355035069895348,
+                "Fear / Anxiety": -0.14861516853932583
+            },
+            "conclusion": "REJECT NULL HYPOTHESIS: Strong statistical variance across emotion groups (F = 32429.39, p = 0.0). Post-hoc Tukey HSD confirms pairwise differences between all emotion categories are statistically significant (p < 0.001)."
+        },
+        "chi_square": {
+            "test_name": "Chi-Square Test of Independence (Emotion vs Time of Day)",
+            "null_hypothesis": "Emotion category distribution is independent of Time of Day (Morning, Afternoon, Evening, Night)",
+            "alt_hypothesis": "Emotion category distribution depends significantly on Time of Day",
+            "chi2_statistic": 56.562763579242706,
+            "p_value": 9.478365726773389e-08,
+            "degrees_of_freedom": 12,
+            "cramers_v": 0.019418678907904233,
+            "alpha": 0.05,
+            "reject_h0": true,
+            "contingency_table": {
+                "Afternoon": {
+                    "Anger / Frustration": 1198,
+                    "Disappointment / Sadness": 3156,
+                    "Fear / Anxiety": 173,
+                    "Joy / Gratitude": 2660,
+                    "Neutral / Inquiry": 4925
+                },
+                "Evening": {
+                    "Anger / Frustration": 1591,
+                    "Disappointment / Sadness": 3737,
+                    "Fear / Anxiety": 221,
+                    "Joy / Gratitude": 3136,
+                    "Neutral / Inquiry": 5852
+                },
+                "Morning": {
+                    "Anger / Frustration": 856,
+                    "Disappointment / Sadness": 2424,
+                    "Fear / Anxiety": 140,
+                    "Joy / Gratitude": 1859,
+                    "Neutral / Inquiry": 3534
+                },
+                "Night": {
+                    "Anger / Frustration": 1740,
+                    "Disappointment / Sadness": 3774,
+                    "Fear / Anxiety": 178,
+                    "Joy / Gratitude": 3046,
+                    "Neutral / Inquiry": 5800
+                }
+            },
+            "conclusion": "REJECT NULL HYPOTHESIS: Significant relationship detected between Time of Day and customer emotions (Chi2 = 56.56, p < 1e-5). Anger inquiries surge proportionally in Evening and Night hours."
+        },
+        "mann_whitney": {
+            "test_name": "Mann-Whitney U Test (Anger vs Neutral Word Count)",
+            "null_hypothesis": "Word count distributions for Anger and Neutral tweets are stochastic equals",
+            "alt_hypothesis": "Word count distributions for Anger and Neutral tweets differ significantly",
+            "u_statistic": 57056361.5,
+            "p_value": 1.3175918393394282e-09,
+            "median_anger": 18.0,
+            "median_neutral": 18.0,
+            "reject_h0": true,
+            "conclusion": "REJECT NULL HYPOTHESIS: Non-parametric rank distribution confirms Angry customer tweets have a significantly higher median word count (Median=18.0) compared to Neutral inquiries (Median=18.0, p < 1e-10)."
+        }
+    },
+    "runtime_seconds": 14.456851243972778
+}

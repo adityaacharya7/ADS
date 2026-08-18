@@ -3,8 +3,147 @@ import re
 import html
 import time
 import argparse
+from pathlib import Path
+from typing import List, Optional
 import pandas as pd
 from tqdm import tqdm
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Common English Contractions Mapping
+CONTRACTIONS = {
+    r"\bcan't\b": "cannot",
+    r"\bcant\b": "cannot",
+    r"\bwon't\b": "will not",
+    r"\bwont\b": "will not",
+    r"\bn't\b": " not",
+    r"\bain't\b": "is not",
+    r"\bdon't\b": "do not",
+    r"\bdont\b": "do not",
+    r"\bdoesn't\b": "does not",
+    r"\bdoesnt\b": "does not",
+    r"\bdidn't\b": "did not",
+    r"\bdidnt\b": "did not",
+    r"\bisn't\b": "is not",
+    r"\bisnt\b": "is not",
+    r"\baren't\b": "are not",
+    r"\barent\b": "are not",
+    r"\bwasn't\b": "was not",
+    r"\bwasnt\b": "was not",
+    r"\bweren't\b": "were not",
+    r"\bwerent\b": "were not",
+    r"\bhaven't\b": "have not",
+    r"\bhavent\b": "have not",
+    r"\bhasn't\b": "has not",
+    r"\bhasnt\b": "has not",
+    r"\bhadn't\b": "had not",
+    r"\bhadnt\b": "had not",
+    r"\bshouldn't\b": "should not",
+    r"\bwouldn't\b": "would not",
+    r"\bcouldn't\b": "could not",
+    r"\bi'm\b": "i am",
+    r"\bi've\b": "i have",
+    r"\bi'll\b": "i will",
+    r"\bi'd\b": "i would",
+    r"\bit's\b": "it is",
+    r"\bthat's\b": "that is",
+    r"\bwhat's\b": "what is",
+    r"\bthere's\b": "there is",
+    r"\blet's\b": "let us"
+}
+
+# Negation Triggers and Clause Delimiters
+NEGATION_TRIGGERS = {
+    "not", "no", "never", "cannot", "cant", "n't", "neither", "nor", 
+    "without", "hardly", "scarcely", "barely", "rarely", "seldom", 
+    "lack", "lacking", "nowhere", "nothing", "none"
+}
+
+# Clause Delimiters and Subordinators that Terminate Negation Scope
+CLAUSE_DELIMITERS = {
+    ".", ",", "!", "?", ";", ":", "-", "--", "(", ")", "[", "]", "{", "}",
+    "but", "however", "although", "though", "yet", "except", "while", "nevertheless",
+    "instead", "that", "which", "who", "whom", "whose", "because", "since",
+    "unless", "whereas", "wherever", "after", "before", "so", "and", "or"
+}
+
+# Verbs of removal / cessation / suppression
+# When negated (e.g. "could not shake the fear", "cannot stop the anxiety"),
+# the verb itself is negated, but the subsequent noun represents an active/retained emotion.
+REMOVAL_VERBS = {
+    "shake", "stop", "eliminate", "dispel", "prevent", "avoid", "contain",
+    "suppress", "quell", "overcome", "control", "hide", "resist", "forget",
+    "lose", "calm"
+}
+
+
+def expand_contractions(text: str) -> str:
+    """Expands common English contractions for consistent negation recognition."""
+    if not isinstance(text, str):
+        return ""
+    text_lower = text.lower()
+    for pattern, replacement in CONTRACTIONS.items():
+        text_lower = re.sub(pattern, replacement, text_lower)
+    return text_lower
+
+
+def apply_negation_tagging(text: str, max_window: int = 3) -> str:
+    """
+    Applies bounded negation scope tagging.
+    Appends '_NEG' to tokens within max_window words following a negation trigger,
+    terminating immediately upon encountering clause delimiters, subordinating conjunctions,
+    relative pronouns, or removal/cessation verbs.
+    
+    Example:
+      "I was not disappointed with the outcome, but I was nervous"
+      --> "i was not disappointed_NEG with_NEG the_NEG outcome , but i was nervous"
+      
+      "I could not shake the fear that everything might disappear"
+      --> "i could not shake_NEG the fear that everything might disappear"
+    """
+    if not isinstance(text, str) or not text.strip():
+        return ""
+    
+    expanded = expand_contractions(text)
+    tokens = re.findall(r"\w+|[^\w\s]", expanded, re.UNICODE)
+    
+    tagged_tokens = []
+    scope_remaining = 0
+    
+    for token in tokens:
+        token_lower = token.lower()
+        
+        # Punctuation or clause delimiter immediately clears negation scope
+        if token_lower in CLAUSE_DELIMITERS or re.match(r"^[.,!?;:\-–—]$", token):
+            scope_remaining = 0
+            tagged_tokens.append(token)
+            continue
+            
+        # Negation trigger activates scope for max_window words
+        if token_lower in NEGATION_TRIGGERS:
+            scope_remaining = max_window
+            tagged_tokens.append(token)
+            continue
+            
+        if scope_remaining > 0:
+            # If the token is a removal verb (e.g., "shake" in "could not shake")
+            if token_lower in REMOVAL_VERBS:
+                tagged_tokens.append(f"{token}_NEG")
+                # Terminate negation scope because the object being shaken/avoided is retained!
+                scope_remaining = 0
+                continue
+                
+            if token.isalnum() and not token.isdigit():
+                tagged_tokens.append(f"{token}_NEG")
+            else:
+                tagged_tokens.append(token)
+                
+            scope_remaining -= 1
+        else:
+            tagged_tokens.append(token)
+            
+    return " ".join(tagged_tokens)
+
 
 def clean_tweet_text(text: str) -> str:
     """
@@ -34,9 +173,10 @@ def clean_tweet_text(text: str) -> str:
     
     return text
 
+
 def preprocess_twcs(
-    input_file: str,
-    output_file: str,
+    input_file: str = None,
+    output_file: str = None,
     target_rows: int = 100000,
     min_words: int = 5,
     inbound_only: bool = True,
@@ -46,10 +186,17 @@ def preprocess_twcs(
     Reads twcs.csv in chunks, cleans text, filters low-context & missing rows,
     removes duplicates, and samples to target row count.
     """
+    if input_file is None:
+        input_file = str(PROJECT_ROOT / "data" / "raw" / "twcs.csv")
+    if output_file is None:
+        output_file = str(PROJECT_ROOT / "data" / "processed" / "twcs_cleaned.csv")
+        
     start_time = time.time()
     
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Input file '{input_file}' not found.")
+        
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
         
     print("=" * 65)
     print(" TWCS DATASET PREPROCESSING & REDUCTION PIPELINE ")
@@ -69,13 +216,6 @@ def preprocess_twcs(
     
     cleaned_chunks = []
     processed_clean_rows = 0
-    
-    # Determine total lines for progress bar if possible
-    try:
-        with open(input_file, 'rb') as f:
-            approx_total_chunks = None
-    except Exception:
-        approx_total_chunks = None
 
     print("\n[Step 1/2] Reading and processing CSV in chunks...")
     
@@ -113,12 +253,6 @@ def preprocess_twcs(
             
         cleaned_chunks.append(chunk)
         processed_clean_rows += len(chunk)
-        
-        # If we have gathered enough rows and target_rows is set, we can pause chunk collection if needed,
-        # but to ensure representative sampling, we collect clean candidate rows and sample at end if total is large.
-        if target_rows > 0 and processed_clean_rows >= target_rows * 3:
-            # Reached a healthy buffer for global deduplication and sampling
-            pass
 
     if not cleaned_chunks:
         print("\nNo valid rows remaining after filtering!")
@@ -137,7 +271,6 @@ def preprocess_twcs(
         print(f" Reducing from {len(df_combined):,} eligible clean rows to target {target_rows:,} rows...")
         df_combined = df_combined.sample(n=target_rows, random_state=42).reset_index(drop=True)
     
-    # Selecting useful columns for sentiment analysis
     output_columns = [col for col in ['tweet_id', 'author_id', 'created_at', 'inbound', 'text', 'clean_text', 'word_count'] if col in df_combined.columns]
     df_final = df_combined[output_columns]
     
@@ -161,10 +294,14 @@ def preprocess_twcs(
     print(f" Total Execution Time      : {elapsed_time:.2f} seconds")
     print("=" * 65)
 
+
 if __name__ == '__main__':
+    default_in = str(PROJECT_ROOT / "data" / "raw" / "twcs.csv")
+    default_out = str(PROJECT_ROOT / "data" / "processed" / "twcs_cleaned.csv")
+    
     parser = argparse.ArgumentParser(description="Clean and preprocess TWCS dataset for Sentiment Analysis.")
-    parser.add_argument("--input", "-i", type=str, default="twcs.csv", help="Path to input twcs.csv file")
-    parser.add_argument("--output", "-o", type=str, default="twcs_cleaned.csv", help="Path for cleaned output CSV file")
+    parser.add_argument("--input", "-i", type=str, default=default_in, help="Path to input twcs.csv file")
+    parser.add_argument("--output", "-o", type=str, default=default_out, help="Path for cleaned output CSV file")
     parser.add_argument("--target-rows", "-r", type=int, default=100000, help="Target number of output rows (0 for all valid rows)")
     parser.add_argument("--min-words", "-w", type=int, default=5, help="Minimum word count to keep a comment")
     parser.add_argument("--keep-outbound", action="store_true", help="Keep outbound (company response) tweets as well")

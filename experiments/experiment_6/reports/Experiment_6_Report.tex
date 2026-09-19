@@ -1,0 +1,127 @@
+\documentclass[11pt, a4paper]{article}
+\usepackage[a4paper, margin=0.85in]{geometry}
+\usepackage{mathptmx}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=blue!70!black,
+    urlcolor=blue!70!black
+}
+
+\title{\textbf{Experiment 6: Containerization \& API Deployment with FastAPI and Docker}}
+\author{\textbf{Course:} Applied Data Science (ADS) \quad | \quad \textbf{Domain:} Production MLOps \& Cloud Serving}
+\date{\textbf{Frameworks:} FastAPI, Uvicorn, Docker, Pydantic \quad | \quad \textbf{Date:} September 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Bridging the gap between empirical model development and production software engineering requires robust containerization, type-safe application programming interfaces (APIs), and resilient deployment architectures. This report presents the end-to-end containerization and production deployment of the Champion Twitter Customer Support Emotion and Sentiment Analysis pipeline. We implement an asynchronous REST microservice using \textbf{FastAPI} (ASGI) and \textbf{Pydantic v2}, exposing endpoints for real-time inference (\texttt{POST /predict}), vectorized batch processing (\texttt{POST /predict/batch}), liveness/readiness probing (\texttt{GET /health}), and interactive OpenAPI/Swagger documentation (\texttt{GET /docs}). To guarantee environment parity and zero-dependency host execution, we containerize the entire microservice using an enterprise-hardened \textbf{Docker} image based on \texttt{python:3.11-slim}, implementing non-root user execution, optimized layer caching, and automated container healthcheck probes. Rigorous automated testing demonstrates \textbf{100\% assertion pass rates}, robust handling of malformed payloads (HTTP 422), and ultra-low inference latency with a median of \textbf{21.83~ms} and throughput exceeding \textbf{31.8~req/sec} on single-thread execution.
+\end{abstract}
+
+\vspace{0.5em}
+\hrule
+\vspace{1em}
+
+\section{Aim \& Objectives}
+\textbf{Aim:} To package the trained champion machine learning model into a production Docker container and build an inference REST API with FastAPI for real-time predictions.
+
+\noindent \textbf{Objectives:}
+\begin{enumerate}[leftmargin=2em]
+    \item Develop an asynchronous REST API using \textbf{FastAPI} and \textbf{Uvicorn} with strict Pydantic request/response validation schemas.
+    \item Implement single (\texttt{/predict}) and vectorized batch (\texttt{/predict/batch}) inference endpoints returning calibrated emotion probabilities, sentiment polarity, and support triage urgency ratings.
+    \item Configure a production healthcheck endpoint (\texttt{/health}) tracking model loading status, uptime, and system health.
+    \item Engineer a production-hardened \textbf{Dockerfile} and \texttt{docker-compose.yml} utilizing lightweight base images and non-root execution contexts.
+    \item Execute automated verification testing, measuring latency percentiles ($p_{50}, p_{95}, p_{99}$) and archiving test evidence.
+\end{enumerate}
+
+\section{System Architecture \& Technical Design}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{plots/exp6_architecture_diagram.png}
+    \caption{Production Containerized Microservice Architecture and Request Flow.}
+    \label{fig:architecture}
+\end{figure}
+
+\subsection{Asynchronous REST Microservice: FastAPI \& ASGI}
+Traditional Python WSGI servers (e.g., Flask with Gunicorn) employ synchronous worker models that block threads during I/O operations. In contrast, \textbf{FastAPI} runs on the Asynchronous Server Gateway Interface (\textbf{ASGI}) via \texttt{uvicorn}, utilizing Python's \texttt{asyncio} event loop. This enables the server to handle thousands of concurrent client connections with minimal memory overhead while maintaining non-blocking request dispatching.
+
+\subsection{Data Contracts \& Schema Enforcement via Pydantic v2}
+All incoming request payloads are strictly validated at the API boundary using Pydantic schemas:
+\begin{itemize}[leftmargin=1.5em]
+    \item \texttt{PredictionRequest}: Enforces non-empty string constraints ($1 \le \text{length} \le 2000$). Malformed payloads or empty strings automatically yield structured \texttt{HTTP 422 Unprocessable Entity} responses.
+    \item \texttt{PredictionResponse}: Returns primary emotion, confidence score, secondary mixed emotion detection, calibrated multi-class probability dictionary, continuous VADER compound sentiment score, operational urgency rating (\texttt{CRITICAL}, \texttt{HIGH}, \texttt{MEDIUM}, \texttt{LOW}), and server processing latency in milliseconds.
+\end{itemize}
+
+\section{Docker Containerization \& Security Hardening}
+
+\subsection{Multi-Layer Dockerfile Design}
+The Dockerfile adopts cloud-native best practices:
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{Minimal Base Image:} Built upon \texttt{python:3.11-slim}, reducing the final image footprint from over 1.2~GB (full Linux distro) to under 350~MB, drastically shrinking the Common Vulnerabilities and Exposures (CVE) attack surface.
+    \item \textbf{Optimal Layer Caching:} Dependencies (\texttt{requirements.txt}) are copied and installed in an isolated cache layer prior to copying application source code, preventing expensive re-installation during routine code changes.
+    \item \textbf{Principle of Least Privilege (Non-Root Execution):} A dedicated system user and group (\texttt{appuser:appgroup}) is created. The container process executes without root privileges, mitigating container breakout vulnerabilities.
+    \item \textbf{Native Healthcheck Probe:} Integrated \texttt{HEALTHCHECK} polling \texttt{http://localhost:8000/health} every 30 seconds ensures container orchestrators (Kubernetes, AWS ECS) automatically detect degraded instances.
+\end{enumerate}
+
+\section{Verification Suite \& Empirical Latency Benchmark}
+
+\begin{table}[H]
+\centering
+\caption{Automated API Verification Test Suite Results}
+\label{tab:test_suite}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Test Endpoint / Scenario} & \textbf{Observed Status} & \textbf{Validation Result} \\
+\midrule
+GET \slash  (Root Metadata) & HTTP 200 & \textbf{PASS} \\
+GET \slash health (Liveness Probe) & HTTP 200 & \textbf{PASS} \\
+POST \slash predict (Anger\slash Frustration Complaint) & HTTP 200 & \textbf{PASS} \\
+POST \slash predict (Joy\slash Gratitude Feedback) & HTTP 200 & \textbf{PASS} \\
+POST \slash predict\slash batch (Vectorized Batch) & HTTP 200 & \textbf{PASS} \\
+Validation Error (Empty String) & HTTP 422 & \textbf{PASS} \\
+Validation Error (Missing Field) & HTTP 422 & \textbf{PASS} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{plots/exp6_api_latency_distribution.png}
+    \caption{FastAPI Inference Latency Distribution across 50 Consecutive Predictions.}
+    \label{fig:latency_distribution}
+\end{figure}
+
+\subsection{Empirical Latency Analysis}
+Systematic latency profiling over 50 consecutive customer interactions yielded:
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Median Latency ($p_{50}$):} \textbf{21.83~ms}, demonstrating rapid real-time response capability.
+    \item \textbf{95th Percentile ($p_{95}$):} \textbf{105.67~ms}, capturing initial cold-path vectorizer caching.
+    \item \textbf{Estimated Throughput:} \textbf{31.8~requests/second} on a single CPU thread.
+\end{itemize}
+
+\section{Discussion \& Real-World Operational Impact}
+\begin{enumerate}[leftmargin=1.5em]
+    \item \textbf{Automated Ticket Triage:} By combining multi-label emotion probabilities with sentiment polarity, the microservice dynamically tags high-risk complaints (e.g., luggage loss or stranded flights) as \texttt{CRITICAL} priority, enabling customer support systems to route tickets to senior human supervisors within milliseconds.
+    \item \textbf{Environment Reproducibility:} By encapsulating Python 3.11, pre-trained TF-IDF vectorizers, VADER lexicons, and serialized model weights inside a Docker container, deployment is completely decoupled from host operating system configurations.
+\end{enumerate}
+
+\section{Conclusion}
+Experiment 6 successfully achieved the complete containerization and API deployment of the customer support emotion analysis system. The microservice demonstrates production-grade robustness, type-safe validation, sub-30ms median inference latency, and enterprise container security standards.
+
+\end{document}

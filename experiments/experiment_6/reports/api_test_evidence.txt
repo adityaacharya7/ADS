@@ -1,0 +1,180 @@
+================================================================================
+              EXPERIMENT 6: API TEST EVIDENCE & VERIFICATION LOG               
+================================================================================
+
+Timestamp        : 2026-09-19 15:56:02
+Framework        : FastAPI 0.115+ / Uvicorn
+Test Status      : ALL TESTS PASSED (100% Assertion Success)
+
+--------------------------------------------------------------------------------
+INFERENCE LATENCY BENCHMARK RESULTS (50 Iterations):
+--------------------------------------------------------------------------------
+Mean Latency     : 31.45 ms
+Median (p50)     : 21.83 ms
+95th Pct (p95)   : 105.67 ms
+99th Pct (p99)   : 180.19 ms
+Throughput       : 31.8 req/sec
+
+--------------------------------------------------------------------------------
+SAMPLE REQUEST / RESPONSE TRANSCRIPTS:
+--------------------------------------------------------------------------------
+
+[Endpoint] GET / (Root Metadata) -> Status: HTTP 200
+Response : {
+  "service": "ADS Customer Support Emotion & Sentiment Analysis API",
+  "version": "1.0.0",
+  "framework": "FastAPI (ASGI)",
+  "containerized": true,
+  "docs_url": "/docs",
+  "health_url": "/health",
+  "endpoints": {
+    "predict_single": "POST /predict",
+    "predict_batch": "POST /predict/batch",
+    "health_check": "GET /health"
+  }
+}
+
+[Endpoint] GET /health (Liveness Probe) -> Status: HTTP 200
+Response : {
+  "status": "healthy",
+  "version": "1.0.0",
+  "model_loaded": true,
+  "model_path": "C:\\Users\\adity\\Desktop\\Projects\\ADS\\experiments\\experiment_4\\models\\best_emotion_model_exp4.joblib",
+  "uptime_seconds": 0.13,
+  "timestamp": "2026-09-19T10:25:59Z"
+}
+
+[Endpoint] POST /predict (Anger/Frustration Complaint) -> Status: HTTP 200
+Request  : {"text": "My flight was delayed 8 hours and no customer representative answered! Terrible service, I demand an immediate refund!"}
+Response : {
+  "status": "success",
+  "raw_text": "My flight was delayed 8 hours and no customer representative answered! Terrible service, I demand an immediate refund!",
+  "primary_emotion": "Anger / Frustration",
+  "confidence": 0.9223,
+  "secondary_emotion": "None detected above threshold",
+  "is_mixed_emotion": false,
+  "emotion_probabilities": {
+    "Anger / Frustration": 0.9223,
+    "Disappointment / Sadness": 0.0776,
+    "Fear / Anxiety": 0.0,
+    "Joy / Gratitude": 0.0,
+    "Neutral / Inquiry": 0.0
+  },
+  "sentiment": "Negative",
+  "vader_compound": -0.8065,
+  "urgency_level": "CRITICAL",
+  "latency_ms": 54.74
+}
+
+[Endpoint] POST /predict (Joy/Gratitude Feedback) -> Status: HTTP 200
+Request  : {"text": "Thank you so much! The support agent was incredibly polite, fast, and resolved my order issue in 2 minutes! \ud83d\ude0a"}
+Response : {
+  "status": "success",
+  "raw_text": "Thank you so much! The support agent was incredibly polite, fast, and resolved my order issue in 2 minutes! \ud83d\ude0a",
+  "primary_emotion": "Joy / Gratitude",
+  "confidence": 1.0,
+  "secondary_emotion": "None detected above threshold",
+  "is_mixed_emotion": false,
+  "emotion_probabilities": {
+    "Anger / Frustration": 0.0,
+    "Disappointment / Sadness": 0.0,
+    "Fear / Anxiety": 0.0,
+    "Joy / Gratitude": 1.0,
+    "Neutral / Inquiry": 0.0
+  },
+  "sentiment": "Positive",
+  "vader_compound": 0.9144,
+  "urgency_level": "LOW",
+  "latency_ms": 19.05
+}
+
+[Endpoint] POST /predict/batch (Vectorized Batch) -> Status: HTTP 200
+Request  : {"texts": ["My luggage arrived damaged and open! Horrible experience!", "Can you tell me what time the store opens tomorrow morning?", "Just wanted to say thanks for the prompt help today! Excellent service!"]}
+Response : {
+  "status": "success",
+  "total_count": 3,
+  "predictions": [
+    {
+      "status": "success",
+      "raw_text": "My luggage arrived damaged and open! Horrible experience!",
+      "primary_emotion": "Anger / Frustration",
+      "confidence": 0.9999,
+      "secondary_emotion": "None detected above threshold",
+      "is_mixed_emotion": false,
+      "emotion_probabilities": {
+        "Anger / Frustration": 0.9999,
+        "Disappointment / Sadness": 0.0001,
+        "Fear / Anxiety": 0.0,
+        "Joy / Gratitude": 0.0,
+        "Neutral / Inquiry": 0.0
+      },
+      "sentiment": "Negative",
+      "vader_compound": -0.7896,
+      "urgency_level": "CRITICAL",
+      "latency_ms": 162.64
+    },
+    {
+      "status": "success",
+      "raw_text": "Can you tell me what time the store opens tomorrow morning?",
+      "primary_emotion": "Neutral / Inquiry",
+      "confidence": 0.9994,
+      "secondary_emotion": "None detected above threshold",
+      "is_mixed_emotion": false,
+      "emotion_probabilities": {
+        "Anger / Frustration": 0.0002,
+        "Disappointment / Sadness": 0.0001,
+        "Fear / Anxiety": 0.0001,
+        "Joy / Gratitude": 0.0002,
+        "Neutral / Inquiry": 0.9994
+      },
+      "sentiment": "Neutral",
+      "vader_compound": 0.0,
+      "urgency_level": "MEDIUM",
+      "latency_ms": 13.09
+    },
+    {
+      "status": "success",
+      "raw_text": "Just wanted to say thanks for the prompt help today! Excellent service!",
+      "primary_emotion": "Joy / Gratitude",
+      "confidence": 1.0,
+      "secondary_emotion": "None detected above threshold",
+      "is_mixed_emotion": false,
+      "emotion_probabilities": {
+        "Anger / Frustration": 0.0,
+        "Disappointment / Sadness": 0.0,
+        "Fear / Anxiety": 0.0,
+        "Joy / Gratitude": 1.0,
+        "Neutral / Inquiry": 0.0
+      },
+      "sentiment": "Positive",
+      "vader_compound": 0.8715,
+      "urgency_level": "LOW",
+      "latency_ms": 13.34
+    }
+  ],
+  "batch_latency_ms": 189.24
+}
+
+[Endpoint] Validation Error (Empty String) -> Status: HTTP 422
+Response : {
+  "detail": "Input text cannot be empty or whitespace only."
+}
+
+[Endpoint] Validation Error (Missing Field) -> Status: HTTP 422
+Response : {
+  "detail": [
+    {
+      "type": "missing",
+      "loc": [
+        "body",
+        "text"
+      ],
+      "msg": "Field required",
+      "input": {
+        "invalid_field": "test"
+      }
+    }
+  ]
+}
+
+================================================================================

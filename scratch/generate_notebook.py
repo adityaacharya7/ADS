@@ -1,0 +1,215 @@
+import json
+from pathlib import Path
+
+notebook = {
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Experiment 4: ML Modeling & Experiment Tracking with MLflow\n",
+    "**Course**: Applied Data Science (ADS)  \n",
+    "**Dataset**: Twitter Customer Support (TWCS) Cleaned Dataset  \n",
+    "**Aim**: Build ML pipeline, tune hyperparameters, track experiments with MLflow.  \n",
+    "\n",
+    "---\n",
+    "## Objectives\n",
+    "1. **Dataset Preparation**: Split dataset into 80% training and 20% testing sets using stratified sampling.\n",
+    "2. **Baseline Model Training**: Train 5 diverse machine learning algorithms spanning probabilistic, linear, max-margin, bagging, and gradient boosting paradigms (Multinomial Naive Bayes, Logistic Regression, Linear SVM, Random Forest, LightGBM).\n",
+    "3. **Hyperparameter Tuning**: Apply `GridSearchCV` on selected models to optimize decision thresholds and capacity.\n",
+    "4. **Experiment Tracking with MLflow**: Track runs, log hyperparameters, evaluation metrics (Accuracy, Macro F1, Weighted F1), and model artifacts.\n",
+    "5. **Model Selection & Saving**: Select the top-performing champion model and serialize it for production inference."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1. Imports & Environment Setup"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import time\n",
+    "import json\n",
+    "from pathlib import Path\n",
+    "\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import scipy.sparse as sp\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "\n",
+    "from sklearn.model_selection import train_test_split, GridSearchCV\n",
+    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "from sklearn.preprocessing import StandardScaler, MinMaxScaler\n",
+    "from sklearn.naive_bayes import MultinomialNB\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.svm import LinearSVC\n",
+    "from sklearn.ensemble import RandomForestClassifier\n",
+    "from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix\n",
+    "import joblib\n",
+    "\n",
+    "from lightgbm import LGBMClassifier\n",
+    "import mlflow\n",
+    "import mlflow.sklearn\n",
+    "\n",
+    "from src.preprocessing import clean_tweet_text, apply_negation_tagging\n",
+    "from src.emotion_labeler import EmotionLabeler, EMOTION_CLASSES\n",
+    "\n",
+    "# Configure MLflow Tracking\n",
+    "mlflow_dir = Path('../mlruns').resolve()\n",
+    "os.makedirs(mlflow_dir, exist_ok=True)\n",
+    "mlflow.set_tracking_uri(f\"file:///{str(mlflow_dir).replace('\\\\', '/')}\")\n",
+    "mlflow.set_experiment(\"Customer_Support_Emotion_Classification_Exp4\")\n",
+    "print(\"MLflow Tracking configured successfully at:\", mlflow.get_tracking_uri())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 2. Dataset Preparation & Feature Engineering\n",
+    "We load the cleaned Twitter customer interactions and perform an 80/20 stratified split to preserve emotion class proportions.\n",
+    "Text features are extracted using **TF-IDF with unigrams and bigrams**, combined with dense **VADER sentiment polarity scores**."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "data_path = Path('../data/processed/twcs_cleaned.csv')\n",
+    "df = pd.read_csv(data_path)\n",
+    "print(f\"Loaded {len(df):,} total interactions.\")\n",
+    "\n",
+    "# Sample 25,000 interactions for fast and representative training\n",
+    "df_sample = df.sample(n=25000, random_state=42).reset_index(drop=True)\n",
+    "labeler = EmotionLabeler()\n",
+    "df_labeled = labeler.label_dataframe(df_sample, text_column='clean_text')\n",
+    "df_labeled['negated_text'] = df_labeled['clean_text'].apply(apply_negation_tagging)\n",
+    "\n",
+    "# 80/20 Stratified Split\n",
+    "train_df, test_df = train_test_split(\n",
+    "    df_labeled,\n",
+    "    test_size=0.20,\n",
+    "    random_state=42,\n",
+    "    stratify=df_labeled['emotion']\n",
+    ")\n",
+    "print(f\"Train set: {len(train_df):,} samples | Test set: {len(test_df):,} samples\")\n",
+    "\n",
+    "# Vectorize with TF-IDF\n",
+    "vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=10000, sublinear_tf=True)\n",
+    "X_tr_tfidf = vectorizer.fit_transform(train_df['negated_text'])\n",
+    "X_te_tfidf = vectorizer.transform(test_df['negated_text'])\n",
+    "\n",
+    "# Scale numerical VADER sentiment features\n",
+    "vader_cols = ['vader_compound', 'vader_pos', 'vader_neg', 'vader_neu']\n",
+    "scaler = StandardScaler()\n",
+    "X_tr_vader = scaler.fit_transform(train_df[vader_cols].values)\n",
+    "X_te_vader = scaler.transform(test_df[vader_cols].values)\n",
+    "\n",
+    "# Combine sparse lexical + dense polarity features\n",
+    "X_train = sp.hstack([X_tr_tfidf, X_tr_vader], format='csr')\n",
+    "X_test = sp.hstack([X_te_tfidf, X_te_vader], format='csr')\n",
+    "y_train = train_df['emotion'].values\n",
+    "y_test = test_df['emotion'].values\n",
+    "print(\"Combined Feature Matrix Shape:\", X_train.shape)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 3. Baseline Model Training & MLflow Tracking\n",
+    "We train 5 distinct baseline models and track all parameters, metrics, and models with MLflow:\n",
+    "1. **Multinomial Naive Bayes** (Fast probabilistic counting baseline)\n",
+    "2. **Logistic Regression** (Linear probability model)\n",
+    "3. **Linear SVM** (Maximum-margin hyperplane classifier)\n",
+    "4. **Random Forest** (Ensemble bagging of decision trees)\n",
+    "5. **LightGBM** (State-of-the-art gradient boosted trees)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Train and log baselines to MLflow\n",
+    "from src.experiment_4_modeling import train_and_track_experiments\n",
+    "\n",
+    "# Run complete pipeline\n",
+    "summary = train_and_track_experiments()\n",
+    "print(\"Experiment 4 Pipeline Execution Complete!\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 4. Benchmark Evaluation & Visual Diagnostics\n",
+    "Let us inspect the comparative performance across all architectures."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "benchmark_df = pd.DataFrame(summary['all_benchmarks'])\n",
+    "display(benchmark_df[['Model', 'Stage', 'Family', 'Accuracy', 'Macro F1', 'Weighted F1', 'Training Time (s)']])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Visualizations Generated:\n",
+    "- **Model Performance Benchmark** (`plots/exp4_model_comparison.png`)\n",
+    "- **Confusion Matrix Diagnostics** (`plots/exp4_confusion_matrices.png`)\n",
+    "- **Hyperparameter Tuning Deltas** (`plots/exp4_tuning_comparison.png`)\n",
+    "- **MLflow Tracking Dashboard** (`plots/exp4_mlflow_dashboard.png`)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from IPython.display import Image, display\n",
+    "display(Image(filename='../plots/exp4_model_comparison.png'))\n",
+    "display(Image(filename='../plots/exp4_confusion_matrices.png'))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 5. Conclusion & Model Production Deployment\n",
+    "The champion model pipeline has been saved to `models/best_emotion_model_exp4.joblib` and logged in MLflow.\n",
+    "It bundles text preprocessing, negation tagging, TF-IDF vectorization, feature scaling, and inference in a single self-contained artifact."
+   ]
+  }
+ ],
+ "metadata": {
+  "language_info": {
+   "name": "python"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+
+notebook_path = Path("notebooks/experiment_4_mlflow.ipynb")
+with open(notebook_path, "w") as f:
+    json.dump(notebook, f, indent=1)
+print(f"Created notebook at {notebook_path}")

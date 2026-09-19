@@ -1,0 +1,371 @@
+================================================================================
+          EXPERIMENT 3: DETAILED PRESENTATION WALKTHROUGH & VIVA GUIDE
+================================================================================
+Course       : Applied Data Science (ADS)
+Experiment   : Experiment 3 - Exploratory Data Analysis & Statistical Analysis
+Dataset      : Customer Support on Twitter (TWCS) Cleaned Inbound Corpus
+Sample Size  : 50,000 Stratified Customer Inquiries
+Target File  : reports/experiment_3/Experiment_3_Report.docx (and .tex / .pdf)
+================================================================================
+
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. The 60-Second Opening Pitch (Word-for-Word Script)
+2. Section-by-Section Walkthrough (What to Show vs. What to Say)
+   - Phase 1: Problem Definition, Aim, & Engineered Features
+   - Phase 2: Class Balance Analysis (Count Plot & Donut Chart)
+   - Phase 3: Central Tendency & Feature Spread (Histograms & Boxplots)
+   - Phase 4: Correlation Analysis (Pearson vs. Spearman Heatmaps)
+   - Phase 5: Theoretical Distribution Fitting & Outlier Detection
+   - Phase 6: Statistical Hypothesis Testing (The 4 Formal Tests)
+3. Deep-Dive on the 4 Hypothesis Tests (Formulas, P-Values, Decisions)
+4. Key Statistics & Numbers Cheat Sheet (Quick Memorization)
+5. Comprehensive Viva Voce Q&A (Top 12 Questions & Master Answers)
+6. Closing Summary & Business Takeaway
+
+
+================================================================================
+1. THE 60-SECOND OPENING PITCH (Word-for-Word Script)
+================================================================================
+(When Ma'am says: "Explain what you have done in Experiment 3.")
+
+"Good morning / afternoon Ma'am. In Experiment 3, our aim was to perform 
+comprehensive Exploratory Data Analysis (EDA) and inferential Statistical 
+Hypothesis Testing on customer support interactions using 50,000 tweets from 
+the TWCS dataset.
+
+We structured the experiment into four core stages:
+1. Feature Extraction & Class Balance: Extracted 9 linguistic and sentiment 
+   metrics, identifying a realistic 50:1 class imbalance between routine 
+   inquiries and high-friction customer complaints.
+2. Distribution Analysis & Outlier Detection: Evaluated central tendency and 
+   spread, proving that customer tweet length follows a right-skewed Log-Normal 
+   distribution rather than a standard Gaussian curve.
+3. Feature Correlation: Mapped linear (Pearson) and non-linear (Spearman) 
+   relationships across text length, sentiment scores, and punctuation intensity.
+4. Rigorous Hypothesis Testing: Implemented 4 parametric and non-parametric tests:
+   - Welch's two-sample t-test
+   - One-Way ANOVA with Tukey HSD post-hoc
+   - Chi-Square test of independence
+   - Mann-Whitney U test
+
+Our key finding is that frustrated and angry customers write significantly 
+longer tweets (p < 10^-50) and that customer frustration surges during evening 
+and night shifts (p = 0.00031). These insights provide concrete statistical 
+foundations for downstream priority routing and balanced machine learning."
+
+
+================================================================================
+2. SECTION-BY-SECTION WALKTHROUGH (What to Show vs. What to Say)
+================================================================================
+
+--------------------------------------------------------------------------------
+PHASE 1: AIM, DATASET & FEATURE EXTRACTION
+--------------------------------------------------------------------------------
+WHAT TO SHOW ON SCREEN:
+- Title, Objectives, and the Summary Statistics Table (Table 2 in report).
+
+WHAT TO SAY:
+"Ma'am, we began by ingesting 50,000 cleaned inbound customer inquiries from 
+the Twitter Customer Support corpus. For every interaction, we engineered 
+9 multidimensional numerical and categorical features:
+- Text dimensions: `word_count` and `char_count`
+- Sentiment polarity via VADER: `vader_compound` (-1 to +1), `vader_pos`, 
+  `vader_neg`, and `vader_neu`
+- Escalation markers: `exclamation_count`, `question_count`, and `caps_ratio`
+- Contextual metadata: `time_of_day` and the labeled `emotion` class.
+
+Across the dataset, the average customer inquiry is 19.23 words (102.23 characters) 
+with an average sentiment compound score of +0.028, reflecting mostly neutral 
+transactional queries."
+
+
+--------------------------------------------------------------------------------
+PHASE 2: CLASS BALANCE (Count Plot & Donut Chart)
+--------------------------------------------------------------------------------
+WHAT TO SHOW ON SCREEN:
+- Figure 1: `plots/exp3_class_balance.png` (Horizontal Bar + Donut Chart).
+
+WHAT TO SAY:
+"Here in Figure 1, we visualized the frequency distribution across the five 
+customer emotion classes:
+- Neutral / Inquiry: 31,143 samples (62.29%) - Standard tracking & queries.
+- Joy / Gratitude: 9,703 samples (19.41%) - Customer praise.
+- Anger / Frustration: 4,949 samples (9.90%) - Escalated complaints.
+- Disappointment / Sadness: 3,582 samples (7.16%) - Service failures.
+- Fear / Anxiety: 623 samples (1.25%) - Security and urgent account issues.
+
+Key Insight to Highlight:
+This establishes an Imbalance Ratio of 49.99 : 1 between majority neutral 
+inquiries and minority fear/anxiety cases. This proves that real-world customer 
+service data is severely imbalanced, meaning standard classification models 
+would fail without class weighting or focal loss."
+
+
+--------------------------------------------------------------------------------
+PHASE 3: CENTRAL TENDENCY & SPREAD (Histograms & Boxplots)
+--------------------------------------------------------------------------------
+WHAT TO SHOW ON SCREEN:
+- Figure 2: `plots/exp3_feature_distributions.png` (4-panel density histograms)
+- Figure 3: `plots/exp3_boxplots_spread.png` (Multivariate dispersion across emotions)
+
+WHAT TO SAY:
+"In Figures 2 and 3, we analyzed the shape, spread, and central tendencies:
+- Word Count: Displays right-skewness (skewness = +1.02, median = 18 words, 
+  mean = 19.23 words). Most customers are concise, but a subset writes long tweets.
+- Sentiment Polarity: The VADER compound distribution is tri-modal with distinct 
+  peaks at neutral (0.0), positive (+0.65), and negative (-0.60).
+- Boxplot Breakdown by Emotion: Looking at Figure 3, angry and disappointed 
+  tweets exhibit noticeably higher median word counts and larger interquartile 
+  ranges (IQR) compared to joy and neutral queries."
+
+
+--------------------------------------------------------------------------------
+PHASE 4: CORRELATION HEATMAPS (Pearson vs. Spearman)
+--------------------------------------------------------------------------------
+WHAT TO SHOW ON SCREEN:
+- Figure 4: `plots/exp3_correlation_heatmap.png` (Dual Pearson & Spearman Heatmaps).
+
+WHAT TO SAY:
+"In Figure 4, we constructed both Pearson linear (r) and Spearman rank-order (rho) 
+correlation heatmaps:
+1. Collinearity: `word_count` and `char_count` show near-perfect correlation 
+   (r = +0.96, rho = +0.97). This tells us we only need one length feature for ML.
+2. Sentiment Alignment: `vader_compound` has a strong positive correlation with 
+   positive valence (r = +0.81) and strong negative correlation with negative 
+   valence (r = -0.73).
+3. Emotional Emphasis: `caps_ratio` correlates positively with `exclamation_count` 
+   (r = +0.28, rho = +0.31), capturing heightened emotional arousal.
+4. Text length does not correlate with sentiment (r = -0.06), proving that 
+   sentiment polarity is driven by vocabulary choices, not raw message length."
+
+
+--------------------------------------------------------------------------------
+PHASE 5: THEORETICAL DISTRIBUTION FITTING & OUTLIERS
+--------------------------------------------------------------------------------
+WHAT TO SHOW ON SCREEN:
+- Figure 5: `plots/exp3_distribution_fitting_outliers.png` (Parametric Fits & Q-Q plots).
+
+WHAT TO SAY:
+"We fitted theoretical probability distributions using Maximum Likelihood 
+Estimation (MLE) and evaluated goodness-of-fit:
+1. Continuous Variable (Word Count):
+   - We tested Gaussian, Log-Normal, and Exponential distributions.
+   - The Log-Normal distribution achieved the best fit (Kolmogorov-Smirnov KS = 0.0893), 
+     drastically outperforming the standard Gaussian. This is because text length 
+     is bounded at zero and has a long positive tail.
+2. Discrete Variable (Exclamation Count):
+   - Modeled via a Poisson distribution with an estimated arrival rate of 
+     lambda = 0.292 exclamations per tweet.
+3. Outlier Detection:
+   - Using Tukey's 1.5 x IQR rule, the Upper Fence was calculated at 42.0 words 
+     (Q3 + 1.5 * IQR = 24.0 + 1.5 * 12.0).
+   - 1,799 tweets (3.60%) were flagged as upper outliers. These represent 
+     detailed multi-turn complaint narratives that contain critical diagnostic context."
+
+
+--------------------------------------------------------------------------------
+PHASE 6: STATISTICAL HYPOTHESIS TESTING (The 4 Tests)
+--------------------------------------------------------------------------------
+WHAT TO SHOW ON SCREEN:
+- Figure 6: `plots/exp3_hypothesis_tests.png` (Error bar comparisons & Chi-Square heatmap)
+- The Hypothesis Testing section of the report.
+
+WHAT TO SAY:
+"Finally Ma'am, we carried out four formal hypothesis tests with defined null 
+and alternative hypotheses, test statistics, and p-values."
+(Proceed to explain the 4 tests using the detailed breakdown below).
+
+
+================================================================================
+3. DEEP-DIVE ON THE 4 HYPOTHESIS TESTS
+================================================================================
+
+--------------------------------------------------------------------------------
+TEST 1: TWO-SAMPLE WELCH'S INDEPENDENT t-TEST
+--------------------------------------------------------------------------------
+- Question: Do dissatisfied customers write longer tweets than happy customers?
+- Hypotheses:
+    H0: mu_complaint = mu_joy (Mean word counts are identical)
+    H1: mu_complaint != mu_joy (Mean word counts differ significantly)
+- Group Statistics:
+    Complaints (Anger + Sadness): N1 = 8,531, Mean = 21.74 words, Std = 10.32
+    Joy / Gratitude            : N2 = 9,703, Mean = 19.41 words, Std = 10.10
+- Test Results:
+    Welch's t-statistic : t = 15.3815 (degrees of freedom df = 17,896.2)
+    Effect Size         : Cohen's d = 0.229 (Small-to-moderate practical effect)
+    P-Value             : p = 4.78 x 10^-53 (p << 0.001)
+- Decision: REJECT H0.
+- Scientific Interpretation:
+  "The probability that a difference of +2.33 words occurred by random chance is 
+  virtually zero. Frustrated users provide elaborate problem descriptions, 
+  error codes, and transaction numbers."
+
+--------------------------------------------------------------------------------
+TEST 2: ONE-WAY ANALYSIS OF VARIANCE (ANOVA) & TUKEY HSD POST-HOC
+--------------------------------------------------------------------------------
+- Question: Does tweet length vary significantly across all five emotion classes?
+- Hypotheses:
+    H0: mu_1 = mu_2 = mu_3 = mu_4 = mu_5 (All emotion means are equal)
+    H1: At least one emotion category has a statistically distinct mean word count
+- Test Results:
+    ANOVA F-statistic   : F = 254.4395 (Between df = 4, Within df = 49,995)
+    P-Value             : p = 8.22 x 10^-217 (p << 0.001)
+- Decision: REJECT H0.
+- Tukey HSD Post-Hoc Findings:
+  Pairwise comparisons confirm that Anger (+2.48 words, p < 10^-10) and Sadness 
+  (+2.11 words, p < 10^-10) are statistically longer than both Joy and Neutral classes.
+
+--------------------------------------------------------------------------------
+TEST 3: CHI-SQUARE (chi^2) TEST OF INDEPENDENCE
+--------------------------------------------------------------------------------
+- Question: Is customer emotional state dependent on the time of day?
+- Hypotheses:
+    H0: Customer emotion is independent of Time of Day (Morning, Afternoon, Evening, Night)
+    H1: Customer emotion is dependent on Time of Day
+- Contingency Table: 5 Emotion Classes x 4 Time Bins (50,000 total observations)
+- Test Results:
+    Chi-Square Statistic: chi^2 = 36.1225 (df = 12)
+    Cramer's V          : V = 0.0155
+    P-Value             : p = 3.10 x 10^-4 (p = 0.00031 < 0.05)
+- Decision: REJECT H0.
+- Practical Takeaway:
+  Customer emotion varies significantly by time period. Angry complaints surge 
+  in evening and night shifts due to reduced customer support staffing and longer 
+  response latencies.
+
+--------------------------------------------------------------------------------
+TEST 4: MANN-WHITNEY U NON-PARAMETRIC RANK-SUM TEST
+--------------------------------------------------------------------------------
+- Question: Does complaint length stochastically dominate joy without assuming normality?
+- Hypotheses:
+    H0: The distributions of complaint and joy word counts are stochastically equal
+    H1: Complaint word count stochastically exceeds joy word count
+- Test Results:
+    Mann-Whitney U      : U = 47,272,279.5
+    P-Value             : p = 6.85 x 10^-62 (p << 0.001)
+- Decision: REJECT H0.
+- Methodological Value:
+  Validates the Welch's t-test findings non-parametrically, ensuring that right-skewness 
+  or extreme outliers did not distort our conclusions.
+
+
+================================================================================
+4. KEY STATISTICS & NUMBERS CHEAT SHEET
+================================================================================
++------------------------------------+-----------------------------------------+
+| Metric / Parameter                 | Value / Finding                         |
++------------------------------------+-----------------------------------------+
+| Dataset Analyzed                   | 50,000 stratified tweets (TWCS corpus)  |
+| Class Imbalance Ratio              | 49.99 : 1 (Neutral vs. Fear)            |
+| Majority Class                     | Neutral / Inquiry (62.29%, N = 31,143)  |
+| Mean Tweet Length                  | 19.23 words / 102.23 characters         |
+| Mean VADER Compound Score          | +0.028 (Neutral baseline)               |
+| Word Count Skewness                | +1.02 (Right-skewed)                    |
+| Best Distribution Fit (Word Count) | Log-Normal (KS-Stat = 0.0893)           |
+| Poisson Arrival Rate (Exclamation) | lambda = 0.292 exclamations / tweet     |
+| Outlier Upper Fence (Tukey IQR)    | 42.0 words (3.60% outliers, N = 1,799)  |
+| Welch's t-test Statistic & P-value | t = 15.38, p = 4.78 x 10^-53            |
+| One-Way ANOVA F-Stat & P-value     | F = 254.44, p = 8.22 x 10^-217          |
+| Chi-Square Statistic & P-value     | chi^2 = 36.12, p = 0.00031              |
+| Mann-Whitney U P-value             | p = 6.85 x 10^-62                       |
++------------------------------------+-----------------------------------------+
+
+
+================================================================================
+5. COMPREHENSIVE VIVA VOCE Q&A (Top 12 Questions & Master Answers)
+================================================================================
+
+Q1: Why did you use Welch's t-test instead of the standard Student's t-test?
+A1: "Standard Student's t-test assumes both equal sample sizes and equal variances 
+    (homoscedasticity). In our dataset, complaints (N = 8,531) and joy tweets 
+    (N = 9,703) have unequal sample sizes and differing standard deviations. 
+    Welch's t-test adjusts degrees of freedom using the Welch-Satterthwaite 
+    equation and does not require equal variances."
+
+Q2: What is the significance of the p-value being p = 4.78 x 10^-53?
+A2: "The p-value is the probability of observing our test statistic (or something 
+    more extreme) assuming the null hypothesis is true. A p-value of 10^-53 is 
+    orders of magnitude below our alpha threshold of 0.05. This gives us overwhelming 
+    statistical evidence to reject H0 and confirm that the length difference is 
+    genuine and not random sampling noise."
+
+Q3: Why did you run a Mann-Whitney U test if you already had the t-test?
+A3: "Because our word count distribution is right-skewed (skewness = +1.02) and 
+    strictly speaking violates the normality assumption of parametric t-tests. 
+    The Mann-Whitney U test is a non-parametric rank-sum test that requires no 
+    normality assumptions. Getting p = 6.85 x 10^-62 proved our conclusions are 
+    fully robust."
+
+Q4: Why is Log-Normal a better theoretical fit than Gaussian for text length?
+A4: "Text length has two strict physical constraints: it cannot be negative (bounded at 0), 
+    and most people write brief messages with a long tail of very descriptive 
+    complaints. The Log-Normal distribution naturally models strictly positive, 
+    right-skewed multiplicative processes, matching our empirical data with 
+    KS-stat = 0.0893."
+
+Q5: What was the purpose of Tukey's HSD post-hoc test after ANOVA?
+A5: "A one-way ANOVA only tells us that AT LEAST ONE emotion group differs from the 
+    others (omnibus test), but it cannot specify WHICH pairs differ. Tukey's HSD 
+    (Honestly Significant Difference) performs pairwise comparisons while controlling 
+    the family-wise error rate, proving that Anger and Sadness are specifically 
+    longer than Joy and Neutral."
+
+Q6: Why did you compute both Pearson and Spearman correlation matrices?
+A6: "Pearson r evaluates purely linear relationships, which can be distorted by 
+    outliers. Spearman rho calculates monotonic rank-order correlation, which captures 
+    non-linear relationships and is invariant to skewness. Presenting both provides 
+    a complete view of linear and monotonic dependencies."
+
+Q7: What does the Chi-Square test tell us about time of day?
+A7: "The Chi-Square test of independence (chi^2 = 36.12, df = 12, p = 0.00031) rejects 
+    the null hypothesis that emotion is independent of time. It reveals that angry 
+    and frustrated interactions surge during evening and night shifts, likely due to 
+    lower support agent staffing levels and slower response times."
+
+Q8: How did you calculate Tukey's outlier fence?
+A8: "We calculated the Interquartile Range: IQR = Q3 - Q1 = 24.0 - 12.0 = 12.0 words.
+    Upper Fence = Q3 + 1.5 * IQR = 24.0 + 1.5(12.0) = 42.0 words.
+    Any tweet with more than 42 words is an outlier (1,799 tweets, 3.60%)."
+
+Q9: Should we delete these 3.6% outlier tweets before training models?
+A9: "No Ma'am. In NLP and customer support, long tweets are NOT measurement errors; 
+    they represent complex, multi-issue customer grievances containing critical 
+    troubleshooting information. Removing them would discard our most valuable 
+    high-priority escalation training data."
+
+Q10: What does the 50:1 class imbalance mean for future modeling?
+A10: "It means that a naive classifier predicting 'Neutral' every time would achieve 
+     62% accuracy while completely missing all frustrated customers. For downstream 
+     experiments, we must use class-weighted cross-entropy loss, SMOTE/oversampling, 
+     or evaluate with Macro F1-score rather than simple accuracy."
+
+Q11: What is VADER and how does its compound score work?
+A11: "VADER (Valence Aware Dictionary and sEntiment Reasoner) is a rule-based 
+     sentiment tool specifically tuned for social media. It calculates positive, 
+     negative, and neutral valence proportions and normalizes them into a compound 
+     score ranging from -1.0 (extreme negative) to +1.0 (extreme positive)."
+
+Q12: What are the primary open-source libraries used in this experiment?
+A12: "We used Pandas and NumPy for feature engineering, Matplotlib, Seaborn, and 
+     Plotly for visualizations, and SciPy (`scipy.stats`) and Statsmodels for 
+     distribution fitting, ANOVA, t-tests, and Chi-Square computations."
+
+
+================================================================================
+6. CLOSING SUMMARY & BUSINESS TAKEAWAY
+================================================================================
+"In conclusion Ma'am:
+1. Statistical rigor: We proved with extreme significance (p < 10^-50) that customer 
+   complaints are systematically longer and more linguistically intense.
+2. Temporal pattern: Frustration peaks during evening/night hours (p = 0.00031).
+3. Practical Application: A customer support routing engine can use message length, 
+   time of day, and capitalization ratio as real-time heuristic features to 
+   instantly prioritize angry customer tickets to tier-2 human agents before 
+   sentiment processing completes."
+
+================================================================================
+                             END OF GUIDE
+================================================================================

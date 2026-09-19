@@ -10,6 +10,10 @@ data/processed/*.csv
 twcs.csv
 twcs_cleaned.csv
 
+# Allow curated sample datasets for Google Colab and quick benchmarks
+!data/processed/twcs_sample_*.csv
+!data/processed/twcs_sample_*.csv.gz
+
 # Model weights & large serialized artifacts
 models/*.joblib
 models/*.pkl

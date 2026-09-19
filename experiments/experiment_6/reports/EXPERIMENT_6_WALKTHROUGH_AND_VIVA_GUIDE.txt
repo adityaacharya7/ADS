@@ -1,0 +1,319 @@
+================================================================================
+          EXPERIMENT 6: DETAILED PRESENTATION WALKTHROUGH & VIVA GUIDE
+================================================================================
+Course       : Applied Data Science (ADS)
+Experiment   : Experiment 6 - Containerization & API Deployment
+Frameworks   : FastAPI, Uvicorn (ASGI), Docker, Pydantic v2, Python 3.11
+Model Served : Champion Negation-Aware Emotion Pipeline (LightGBM + TF-IDF + VADER)
+Endpoints    : GET /, GET /health, POST /predict, POST /predict/batch, GET /docs
+Deliverables : Academic PDF, Word (.docx), LaTeX Source, Overleaf ZIP, Dockerfile
+================================================================================
+
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. The 60-Second Opening Pitch (Word-for-Word Script)
+2. Step-by-Step Walkthrough (What to Show vs. What to Say)
+   - Step 1: FastAPI Microservice Architecture & Pydantic Schemas
+   - Step 2: Real-time & Vectorized Batch Inference Endpoints
+   - Step 3: Operational Health Monitoring (/health)
+   - Step 4: Enterprise Docker Containerization & Security Hardening
+   - Step 5: Automated Test Verification & Latency Benchmarking
+3. Zero-Math Intuition: APIs, ASGI vs. WSGI & Docker Explained Simply
+4. Key Statistics & Numbers Cheat Sheet (Quick Memorization)
+5. Comprehensive Viva Voce Q&A (Top 18 Questions & Master Answers)
+6. Real-World Production MLOps & Cloud Architecture
+
+
+================================================================================
+1. THE 60-SECOND OPENING PITCH (Word-for-Word Script)
+================================================================================
+(When the Professor / Examiner asks: "Explain what you have done in Experiment 6.")
+
+"Good morning / afternoon Ma'am / Sir. In Experiment 6, our objective was to 
+transition our trained champion Machine Learning model from the experimental sandbox 
+into an enterprise-grade, containerized production microservice.
+
+Following the curriculum guidelines, we accomplished this in four major steps:
+
+1. Asynchronous API Architecture: Built a high-performance REST microservice using 
+   FastAPI and Uvicorn running on ASGI. We enforced strict Pydantic v2 data contracts 
+   for incoming payloads, supporting automatic OpenAPI/Swagger documentation at /docs.
+
+2. Production Inference Endpoints: Exposed POST /predict for real-time customer 
+   support ticket classification and POST /predict/batch for high-throughput batching. 
+   The API returns calibrated probabilities across all 5 emotion dimensions, sentiment 
+   polarity, and dynamically calculates operational ticket urgency (CRITICAL, HIGH, 
+   MEDIUM, LOW) for automated helpdesk routing.
+
+3. Observability & Health Probing: Implemented a production GET /health probe reporting 
+   model memory status, semantic versioning, and server uptime for container orchestrators.
+
+4. Enterprise Docker Containerization: Packaged the microservice inside a hardened 
+   Dockerfile based on python:3.11-slim. We followed cloud-native security best practices: 
+   isolated layer caching, non-root user execution (appuser), and a native container HEALTHCHECK.
+
+5. Rigorous Verification: Automated integration testing confirmed 100% assertion pass 
+   rates, robust HTTP 422 error handling for malformed inputs, and sub-30ms median 
+   inference latency (throughput ~35 req/sec on a single thread)."
+
+
+================================================================================
+2. STEP-BY-STEP WALKTHROUGH (What to Show vs. What to Say)
+================================================================================
+
+--- STEP 1: FASTAPI MICROSERVICE & PYDANTIC DATA CONTRACTS ---
+WHAT TO SHOW:
+- experiments/experiment_6/src/app.py (PredictionRequest and PredictionResponse models).
+- plots/exp6_architecture_diagram.png (Architecture schematic).
+
+WHAT TO SAY:
+"We built the microservice using FastAPI rather than traditional Flask because FastAPI 
+is natively asynchronous (ASGI) and integrates Pydantic v2. When a client submits a 
+JSON payload to /predict, Pydantic immediately validates text length, character types, 
+and required fields at the API gateway before executing any ML code. If the input is 
+empty or malformed, the API automatically returns HTTP 422 Unprocessable Entity with a 
+structured error description, shielding the model from invalid runtime state."
+
+
+--- STEP 2: REAL-TIME PREDICTION & OPERATIONAL TICKET TRIAGE ---
+WHAT TO SHOW:
+- reports/api_test_evidence.txt (Sample curl requests and JSON responses).
+- Test Case 3 & 4 transcripts in reports/Experiment_6_Report.pdf.
+
+WHAT TO SAY:
+"Our POST /predict endpoint takes raw customer support text, cleans it, extracts 
+negation tags, computes VADER polarity, and queries our champion LightGBM classifier. 
+Beyond just predicting the primary emotion, our service computes two crucial business metrics:
+1. Multi-class Probability Distribution: Returns exact confidences for Joy, Anger, 
+   Sadness, Fear, and Neutral.
+2. Automated Urgency Triage: Highly negative sentiment combined with Anger or Fear 
+   automatically tags the ticket as CRITICAL or HIGH priority, allowing customer service 
+   platforms (like Zendesk or Salesforce) to instantly route urgent complaints to senior managers."
+
+
+--- STEP 3: OPERATIONAL HEALTH PROBING (/health) ---
+WHAT TO SHOW:
+- The GET /health endpoint in experiments/experiment_6/src/app.py.
+- Test Case 2 in reports/api_test_evidence.json.
+
+WHAT TO SAY:
+"In production environments like Kubernetes or AWS ECS, containers must expose liveness 
+and readiness probes. Our GET /health endpoint verifies that the serialized model is 
+loaded in memory, reports semantic API version 1.0.0, calculates uptime duration, and 
+returns an ISO-8601 UTC timestamp. If the model fails to load, /health returns a degraded 
+status, preventing the load balancer from sending traffic to that instance."
+
+
+--- STEP 4: ENTERPRISE DOCKER CONTAINERIZATION ---
+WHAT TO SHOW:
+- experiments/experiment_6/Dockerfile.
+- experiments/experiment_6/docker-compose.yml.
+- experiments/experiment_6/.dockerignore.
+
+WHAT TO SAY:
+"In Step 4, we containerized the application. We implemented four cloud-native security 
+best practices in our Dockerfile:
+1. Lightweight Base Image: Utilized python:3.11-slim instead of full Ubuntu/Debian, 
+   reducing the container footprint to <350MB and drastically cutting CVE vulnerabilities.
+2. Layer Caching: requirements.txt is copied and pip installed in an isolated cache layer 
+   before copying the code. Code changes do not trigger expensive dependency re-installs.
+3. Non-Root User: Created an unprivileged user 'appuser' in group 'appgroup'. The container 
+   never runs as root, mitigating container breakout attacks.
+4. Native Container Healthcheck: Configured a Docker HEALTHCHECK instruction polling /health 
+   every 30 seconds."
+
+
+--- STEP 5: AUTOMATED TESTING & LATENCY PROFILING ---
+WHAT TO SHOW:
+- plots/exp6_api_latency_distribution.png (Latency histogram & KDE curve).
+- reports/api_test_evidence.json.
+
+WHAT TO SAY:
+"We built an automated test runner in test_api.py. It tested 7 distinct scenarios: 
+liveness, metadata, customer complaints, customer praise, batch processing, and 
+payload schema validation errors. All 7 tests achieved a 100% pass rate. 
+
+We then profiled latency across 50 consecutive requests. Median latency (p50) was 
+only 19.35 milliseconds, with a 95th percentile (p95) of 133 milliseconds and an estimated 
+single-thread throughput of ~35 requests per second, proving the API is ready for 
+high-volume real-time traffic."
+
+
+================================================================================
+3. ZERO-MATH INTUITION: APIS, ASGI VS. WSGI & DOCKER EXPLAINED SIMPLY
+================================================================================
+
+Q: What is an API and why does a Machine Learning model need one?
+A: An ML model stored as a .joblib file on disk is like a chef who only speaks a private 
+   language. Nobody outside your computer can talk to it. An API is the restaurant waiter. 
+   It takes a customer's order (JSON text over HTTP), translates it for the chef, gets 
+   the meal (prediction), and politely hands it back to the customer.
+
+Q: What is the difference between WSGI (Flask) and ASGI (FastAPI)?
+A: - WSGI is like a bank teller who can only serve one customer at a time. If customer A 
+     is waiting for their paperwork to print, the teller just stands there doing nothing, 
+     making everyone else in line wait.
+   - ASGI (FastAPI) is like a coffee shop barista. While customer A's espresso is brewing 
+     (I/O waiting), the barista immediately takes the order from customer B and starts 
+     steaming milk for customer C. It handles thousands of connections without blocking.
+
+Q: What is Docker and why is it better than just running python app.py?
+A: "It works on my machine" is the oldest problem in software. If your server has Python 3.9 
+   and your laptop has Python 3.11, the model crashes. Docker packages your code, Python runtime, 
+   exact library versions, and system packages into an isolated shipping container. If it runs 
+   in Docker on your laptop, it runs identically on AWS, Google Cloud, or Azure.
+
+
+================================================================================
+4. KEY STATISTICS & NUMBERS CHEAT SHEET (Quick Memorization)
+================================================================================
+1. Web Framework             : FastAPI 0.115+ with Uvicorn (ASGI)
+2. Base Docker Image         : python:3.11-slim (<350 MB footprint)
+3. Container User            : appuser (non-root unprivileged security context)
+4. Model Served              : LightGBM + TF-IDF (10,000 features) + VADER sentiment
+5. Monitored Endpoints       : GET /, GET /health, POST /predict, POST /predict/batch
+6. Automated Tests           : 7 Integration Tests (100% Assertion Success Rate)
+7. Median Latency (p50)      : 19.35 ms
+8. 95th Percentile (p95)     : 133.18 ms
+9. Estimated Throughput      : 34.6 requests/second (Single Thread)
+10. Container Healthcheck    : Polls http://localhost:8000/health every 30 seconds
+
+
+================================================================================
+5. COMPREHENSIVE VIVA VOCE Q&A (Top 18 Questions & Master Answers)
+================================================================================
+
+Q1: Why did you choose FastAPI over Flask or Django?
+A1: "FastAPI offers three major technical advantages for ML deployment:
+     1. Asynchronous native support (ASGI) via Python's asyncio and Uvicorn.
+     2. Automatic data validation and serialization powered by Pydantic v2.
+     3. Automatic interactive API documentation generated from type annotations at /docs (Swagger UI)."
+
+Q2: What is Pydantic and why is it important at the API boundary?
+A2: "Pydantic enforces type hints and data validation at runtime. If a client sends an empty 
+     string, non-string data, or missing keys, Pydantic intercepts the request before it reaches 
+     our feature engineering pipeline and immediately returns a structured HTTP 422 error, 
+     preventing unhandled server exceptions (HTTP 500)."
+
+Q3: What happens under the hood when a client sends a POST request to /predict?
+A3: "1. Uvicorn receives the HTTP request over TCP port 8000.
+     2. Process time middleware captures the starting timestamp.
+     3. Pydantic validates the JSON payload against PredictionRequest schema.
+     4. The text is passed to our singleton EmotionPredictor.
+     5. The pipeline cleans text, extracts negation scopes (_NEG), and calculates VADER polarity.
+     6. Features are vectorized and scored by the LightGBM classifier.
+     7. Triage urgency is calculated based on emotion and sentiment severity.
+     8. Pydantic serializes the output into PredictionResponse and returns HTTP 200 with 
+        an X-Process-Time-Ms header."
+
+Q4: What is the purpose of the lifespan context manager in FastAPI?
+A4: "The lifespan handler manages startup and shutdown events. Loading a 2.5MB ML model 
+     from disk takes several seconds. If loaded inside an endpoint function, every request 
+     would incur that delay. The lifespan handler loads the model into memory once when the 
+     server boots up, so all subsequent requests perform instant in-memory inference."
+
+Q5: What is CORS and why did you add CORSMiddleware?
+A5: "CORS stands for Cross-Origin Resource Sharing. Web browsers enforce a Same-Origin Policy 
+     that blocks front-end web applications (e.g. running on localhost:3000) from querying an 
+     API on localhost:8000 unless the API explicitly includes CORS headers. CORSMiddleware allows 
+     our API to be consumed by enterprise web dashboards and mobile clients safely."
+
+Q6: Why is a GET /health endpoint essential in production?
+A6: "In cloud container orchestration (Kubernetes, AWS ECS, GCP Cloud Run), orchestrators need 
+     to know if a container is alive and ready to receive traffic. A /health endpoint acts as a 
+     health check probe. If a container crashes, runs out of memory, or hangs, the probe fails 
+     and the orchestrator automatically restarts the container or spins up a healthy replacement."
+
+Q7: What is the difference between a Docker Image and a Docker Container?
+A7: "A Docker Image is a read-only blueprint or snapshot containing the application code, 
+     libraries, and environment. A Docker Container is a running, stateful instance of that image, 
+     isolated from the host operating system."
+
+Q8: Why did you choose python:3.11-slim instead of python:3.11-alpine or standard python:3.11?
+A8: "The standard image (python:3.11) contains full build tools and Debian packages, making it 
+     over 1GB with a large vulnerability surface. While Alpine is tiny (~50MB), it uses musl libc 
+     instead of glibc, which causes severe compilation errors and slow wheel builds for C/C++ 
+     data science libraries like NumPy, SciPy, and LightGBM. python:3.11-slim provides the perfect 
+     sweet spot: it uses glibc for pre-compiled wheels while keeping the image size under 350MB."
+
+Q9: Why is running a container as root dangerous, and how did you prevent it?
+A9: "If an attacker exploits a vulnerability in a container running as root, they gain root 
+     privileges over the container and can potentially break out into the host operating system. 
+     In our Dockerfile, we explicitly created an unprivileged system user ('appuser') and switched 
+     execution context with USER appuser, adhering to the Principle of Least Privilege."
+
+Q10: What is Docker layer caching and how did you optimize your Dockerfile for it?
+A10: "Docker builds images in sequential layers. If a layer hasn't changed, Docker reuses the 
+      cached layer from disk. By copying requirements.txt and running pip install before copying 
+      the source code, routine modifications to application code do not invalidate the cached 
+      pip layer, reducing build times from minutes to seconds."
+
+Q11: What is the purpose of .dockerignore?
+A11: "Similar to .gitignore, .dockerignore prevents unnecessary files (like .git/, virtualenvs, 
+      temporary test logs, and raw 500MB CSV files) from being copied into the Docker build context. 
+      This speeds up build transfer times and keeps the final image lightweight."
+
+Q12: What does your latency distribution plot show?
+A12: "It plots the inference response times over 50 consecutive calls. The median latency (p50) 
+      is 19.35 ms, with the bulk of requests clustering tightly between 18 and 25 ms. The 95th 
+      percentile is 133 ms, reflecting the initial one-time cold-path feature caching."
+
+Q13: What is the difference between p50, p95, and p99 latency?
+A13: "- p50 (Median): 50% of requests are faster than this value. It reflects standard user experience.
+      - p95: 95% of requests are faster than this value. It captures tail latency under mild load.
+      - p99: 99% of requests are faster than this value. It captures worst-case outliers (garbage 
+        collection, network jitter, complex string parsing)."
+
+Q14: How does batch inference (/predict/batch) improve system efficiency?
+A14: "Individual HTTP requests carry protocol overhead (TCP handshakes, headers, serialization). 
+      Batch inference amortizes this overhead by transmitting multiple interactions in a single 
+      payload, allowing vectorized feature transformation and matrix operations in LightGBM, 
+      substantially increasing throughput."
+
+Q15: How did you test your API without starting a live web server on an external port?
+A15: "We used fastapi.testclient.TestClient. TestClient utilizes Starlette and HTTPX to send 
+      mock HTTP requests directly into the ASGI application in-process. This allows 100% realistic 
+      HTTP request/response validation without requiring open network sockets or active port bindings."
+
+Q16: What HTTP status codes does your microservice return?
+A16: "- 200 OK: Successful prediction, batch inference, or health check.
+      - 422 Unprocessable Entity: Payload failed Pydantic validation (empty text or missing fields).
+      - 500 Internal Server Error: Unhandled server or model exception."
+
+Q17: How would you scale this microservice in production to handle 10,000 requests/second?
+A17: "1. Multi-Worker Deployment: Run Uvicorn with multiple worker processes (--workers 4) 
+        managed by Gunicorn.
+      2. Horizontal Pod Autoscaling (HPA): Deploy the Docker container on Kubernetes with 
+        an ingress controller and load balancer, scaling replica pods based on CPU and request latency.
+      3. Caching Layer: Deploy Redis in front of the API to cache predictions for identical 
+        incoming customer inquiries.
+      4. Asynchronous Queues: For non-real-time batch processing, ingest customer tickets via 
+        Kafka or RabbitMQ with Celery worker consumers."
+
+Q18: How does Experiment 6 complete the end-to-end ADS lifecycle?
+A18: "Experiment 2 built the negation-aware NLP pipeline. Experiment 3 established statistical 
+      rigor and hypothesis testing. Experiment 4 trained champion models with MLflow tracking. 
+      Experiment 5 audited and mitigated algorithmic bias. Experiment 6 completes the engineering 
+      lifecycle by containerizing the champion model into an operational, observable, low-latency 
+      microservice ready for real-world enterprise integration."
+
+
+================================================================================
+6. REAL-WORLD PRODUCTION MLOPS & CLOUD ARCHITECTURE
+================================================================================
+1. The 12-Factor App Methodology:
+   Our microservice adheres to 12-Factor principles: declarative dependency isolation, 
+   configuration via environment variables (PORT, ENVIRONMENT), stateless execution, and 
+   port binding via Uvicorn.
+
+2. CI/CD Automated Deployment Pipeline:
+   In modern DevOps:
+   Git Push -> GitHub Actions (runs test_api.py) -> Docker Build & Push to Amazon ECR -> 
+   Kubernetes rolling deployment to AWS EKS with zero downtime.
+
+3. Monitoring & Distributed Tracing:
+   In production, Prometheus scrapes /metrics from the container, Grafana visualizes real-time 
+   latency percentiles, and OpenTelemetry traces requests across microservices.
+================================================================================

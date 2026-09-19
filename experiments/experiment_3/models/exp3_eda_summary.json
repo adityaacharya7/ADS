@@ -1,0 +1,130 @@
+{
+    "experiment": "Experiment 3: Exploratory Data Analysis & Statistical Analysis",
+    "sample_size": 5000,
+    "class_distribution": {
+        "Neutral / Inquiry": 3109,
+        "Joy / Gratitude": 980,
+        "Anger / Frustration": 505,
+        "Disappointment / Sadness": 337,
+        "Fear / Anxiety": 69
+    },
+    "summary_statistics": {
+        "word_count": {
+            "count": 5000.0,
+            "mean": 19.2222,
+            "std": 9.676836021710724,
+            "min": 5.0,
+            "25%": 12.0,
+            "50%": 18.5,
+            "75%": 24.0,
+            "max": 58.0
+        },
+        "char_count": {
+            "count": 5000.0,
+            "mean": 102.193,
+            "std": 51.3361318243412,
+            "min": 16.0,
+            "25%": 64.0,
+            "50%": 100.0,
+            "75%": 126.0,
+            "max": 280.0
+        },
+        "vader_compound": {
+            "count": 5000.0,
+            "mean": 0.032533259999999994,
+            "std": 0.4567305945817269,
+            "min": -0.9612,
+            "25%": -0.296,
+            "50%": 0.0,
+            "75%": 0.4019,
+            "max": 0.9753
+        },
+        "vader_pos": {
+            "count": 5000.0,
+            "mean": 0.1045106,
+            "std": 0.13253004161331122,
+            "min": 0.0,
+            "25%": 0.0,
+            "50%": 0.063,
+            "75%": 0.173,
+            "max": 0.792
+        },
+        "vader_neg": {
+            "count": 5000.0,
+            "mean": 0.0833798,
+            "std": 0.11174933527653284,
+            "min": 0.0,
+            "25%": 0.0,
+            "50%": 0.0,
+            "75%": 0.143,
+            "max": 0.761
+        },
+        "vader_neu": {
+            "count": 5000.0,
+            "mean": 0.812113,
+            "std": 0.15356698601860677,
+            "min": 0.208,
+            "25%": 0.71275,
+            "50%": 0.824,
+            "75%": 0.9402499999999999,
+            "max": 1.0
+        }
+    },
+    "distribution_fits": {
+        "gaussian": {
+            "mu": 19.2222,
+            "std": 9.675868289719533,
+            "ks_stat": 0.08620861254136891,
+            "p_value": 8.861233996906165e-33
+        },
+        "lognormal": {
+            "shape": 0.5281288512708769,
+            "scale": 16.87971902211533,
+            "ks_stat": 0.09336347251740068,
+            "p_value": 2.2163079228608078e-38
+        },
+        "exponential": {
+            "scale": 14.2222,
+            "ks_stat": 0.1701045340967498,
+            "p_value": 5.898319997998068e-127
+        },
+        "poisson": {
+            "lambda": 0.2728,
+            "chi2_stat": 5493.077350386373,
+            "p_value": 0.0
+        },
+        "outliers": {
+            "iqr_count": 193,
+            "z_count": 88,
+            "iqr_upper_bound": 42.0
+        }
+    },
+    "hypothesis_tests": {
+        "welchs_ttest": {
+            "negative_mean": 21.509501187648457,
+            "joy_mean": 19.526530612244898,
+            "t_stat": 4.129648437317657,
+            "p_value": 3.801272861543885e-05,
+            "cohens_d": 0.19398116797014583,
+            "significant": true
+        },
+        "anova": {
+            "f_stat": 28.041531907535564,
+            "p_value": 4.5699749753992197e-23,
+            "significant": true
+        },
+        "chi_square": {
+            "chi2_stat": 15.317547336092995,
+            "dof": 12,
+            "p_value": 0.2245283498191839,
+            "cramers_v": 0.03195574787743513,
+            "significant": false
+        },
+        "mann_whitney": {
+            "u_stat": 466119.0,
+            "p_value": 1.7094725883989157e-06,
+            "significant": true
+        }
+    },
+    "runtime_seconds": 8.779963970184326
+}

@@ -1,0 +1,23 @@
+artifact_path: file:///C:/Users/adity/Desktop/Projects/ADS/mlruns/1/models/m-52117e6fca1f4d8db51d172f10f0e6a6/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.11.9
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.16.0
+model_id: m-52117e6fca1f4d8db51d172f10f0e6a6
+model_size_bytes: 806871
+model_uuid: m-52117e6fca1f4d8db51d172f10f0e6a6
+prompts: null
+run_id: 442028b072974ad9a759ea13047af75c
+utc_time_created: '2026-09-08 18:11:00.196202'

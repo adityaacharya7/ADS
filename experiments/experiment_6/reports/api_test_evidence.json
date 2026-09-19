@@ -1,0 +1,207 @@
+{
+  "experiment": "Experiment 6: Containerization & API Deployment",
+  "timestamp": "2026-09-19 15:56:02",
+  "framework": "FastAPI 0.115+ / Uvicorn",
+  "all_tests_passed": true,
+  "latency_benchmark": {
+    "iterations": 50,
+    "mean_ms": 31.45,
+    "p50_ms": 21.83,
+    "p95_ms": 105.67,
+    "p99_ms": 180.19,
+    "min_ms": 20.25,
+    "max_ms": 188.6,
+    "estimated_throughput_rps": 31.8
+  },
+  "test_cases": [
+    {
+      "test_name": "GET / (Root Metadata)",
+      "status_code": 200,
+      "passed": true,
+      "response_sample": {
+        "service": "ADS Customer Support Emotion & Sentiment Analysis API",
+        "version": "1.0.0",
+        "framework": "FastAPI (ASGI)",
+        "containerized": true,
+        "docs_url": "/docs",
+        "health_url": "/health",
+        "endpoints": {
+          "predict_single": "POST /predict",
+          "predict_batch": "POST /predict/batch",
+          "health_check": "GET /health"
+        }
+      }
+    },
+    {
+      "test_name": "GET /health (Liveness Probe)",
+      "status_code": 200,
+      "passed": true,
+      "response_sample": {
+        "status": "healthy",
+        "version": "1.0.0",
+        "model_loaded": true,
+        "model_path": "C:\\Users\\adity\\Desktop\\Projects\\ADS\\experiments\\experiment_4\\models\\best_emotion_model_exp4.joblib",
+        "uptime_seconds": 0.13,
+        "timestamp": "2026-09-19T10:25:59Z"
+      }
+    },
+    {
+      "test_name": "POST /predict (Anger/Frustration Complaint)",
+      "status_code": 200,
+      "passed": true,
+      "request_payload": {
+        "text": "My flight was delayed 8 hours and no customer representative answered! Terrible service, I demand an immediate refund!"
+      },
+      "response_sample": {
+        "status": "success",
+        "raw_text": "My flight was delayed 8 hours and no customer representative answered! Terrible service, I demand an immediate refund!",
+        "primary_emotion": "Anger / Frustration",
+        "confidence": 0.9223,
+        "secondary_emotion": "None detected above threshold",
+        "is_mixed_emotion": false,
+        "emotion_probabilities": {
+          "Anger / Frustration": 0.9223,
+          "Disappointment / Sadness": 0.0776,
+          "Fear / Anxiety": 0.0,
+          "Joy / Gratitude": 0.0,
+          "Neutral / Inquiry": 0.0
+        },
+        "sentiment": "Negative",
+        "vader_compound": -0.8065,
+        "urgency_level": "CRITICAL",
+        "latency_ms": 54.74
+      }
+    },
+    {
+      "test_name": "POST /predict (Joy/Gratitude Feedback)",
+      "status_code": 200,
+      "passed": true,
+      "request_payload": {
+        "text": "Thank you so much! The support agent was incredibly polite, fast, and resolved my order issue in 2 minutes! \ud83d\ude0a"
+      },
+      "response_sample": {
+        "status": "success",
+        "raw_text": "Thank you so much! The support agent was incredibly polite, fast, and resolved my order issue in 2 minutes! \ud83d\ude0a",
+        "primary_emotion": "Joy / Gratitude",
+        "confidence": 1.0,
+        "secondary_emotion": "None detected above threshold",
+        "is_mixed_emotion": false,
+        "emotion_probabilities": {
+          "Anger / Frustration": 0.0,
+          "Disappointment / Sadness": 0.0,
+          "Fear / Anxiety": 0.0,
+          "Joy / Gratitude": 1.0,
+          "Neutral / Inquiry": 0.0
+        },
+        "sentiment": "Positive",
+        "vader_compound": 0.9144,
+        "urgency_level": "LOW",
+        "latency_ms": 19.05
+      }
+    },
+    {
+      "test_name": "POST /predict/batch (Vectorized Batch)",
+      "status_code": 200,
+      "passed": true,
+      "request_payload": {
+        "texts": [
+          "My luggage arrived damaged and open! Horrible experience!",
+          "Can you tell me what time the store opens tomorrow morning?",
+          "Just wanted to say thanks for the prompt help today! Excellent service!"
+        ]
+      },
+      "response_sample": {
+        "status": "success",
+        "total_count": 3,
+        "predictions": [
+          {
+            "status": "success",
+            "raw_text": "My luggage arrived damaged and open! Horrible experience!",
+            "primary_emotion": "Anger / Frustration",
+            "confidence": 0.9999,
+            "secondary_emotion": "None detected above threshold",
+            "is_mixed_emotion": false,
+            "emotion_probabilities": {
+              "Anger / Frustration": 0.9999,
+              "Disappointment / Sadness": 0.0001,
+              "Fear / Anxiety": 0.0,
+              "Joy / Gratitude": 0.0,
+              "Neutral / Inquiry": 0.0
+            },
+            "sentiment": "Negative",
+            "vader_compound": -0.7896,
+            "urgency_level": "CRITICAL",
+            "latency_ms": 162.64
+          },
+          {
+            "status": "success",
+            "raw_text": "Can you tell me what time the store opens tomorrow morning?",
+            "primary_emotion": "Neutral / Inquiry",
+            "confidence": 0.9994,
+            "secondary_emotion": "None detected above threshold",
+            "is_mixed_emotion": false,
+            "emotion_probabilities": {
+              "Anger / Frustration": 0.0002,
+              "Disappointment / Sadness": 0.0001,
+              "Fear / Anxiety": 0.0001,
+              "Joy / Gratitude": 0.0002,
+              "Neutral / Inquiry": 0.9994
+            },
+            "sentiment": "Neutral",
+            "vader_compound": 0.0,
+            "urgency_level": "MEDIUM",
+            "latency_ms": 13.09
+          },
+          {
+            "status": "success",
+            "raw_text": "Just wanted to say thanks for the prompt help today! Excellent service!",
+            "primary_emotion": "Joy / Gratitude",
+            "confidence": 1.0,
+            "secondary_emotion": "None detected above threshold",
+            "is_mixed_emotion": false,
+            "emotion_probabilities": {
+              "Anger / Frustration": 0.0,
+              "Disappointment / Sadness": 0.0,
+              "Fear / Anxiety": 0.0,
+              "Joy / Gratitude": 1.0,
+              "Neutral / Inquiry": 0.0
+            },
+            "sentiment": "Positive",
+            "vader_compound": 0.8715,
+            "urgency_level": "LOW",
+            "latency_ms": 13.34
+          }
+        ],
+        "batch_latency_ms": 189.24
+      }
+    },
+    {
+      "test_name": "Validation Error (Empty String)",
+      "status_code": 422,
+      "passed": true,
+      "response_sample": {
+        "detail": "Input text cannot be empty or whitespace only."
+      }
+    },
+    {
+      "test_name": "Validation Error (Missing Field)",
+      "status_code": 422,
+      "passed": true,
+      "response_sample": {
+        "detail": [
+          {
+            "type": "missing",
+            "loc": [
+              "body",
+              "text"
+            ],
+            "msg": "Field required",
+            "input": {
+              "invalid_field": "test"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

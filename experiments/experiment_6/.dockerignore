@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Python cache & artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+*.egg-info
+
+# Virtual environments
+.venv
+venv
+env
+
+# Large raw datasets (cleaned data is kept)
+data/raw
+*.csv.gz
+
+# MLflow tracking local databases
+experiments/*/mlruns/
+mlruns/
+*.db
+
+# Scratch and temporary files
+scratch/
+.system_generated/
+*.log
+
+# Large compiled documents
+*.zip

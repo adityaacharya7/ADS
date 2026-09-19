@@ -1,0 +1,120 @@
+{
+    "experiment_number": 4,
+    "experiment_title": "ML Modeling & Experiment Tracking",
+    "dataset": "Customer Support on Twitter (TWCS)",
+    "sample_size": 100000,
+    "train_samples": 80000,
+    "test_samples": 20000,
+    "emotion_classes": [
+        "Joy / Gratitude",
+        "Anger / Frustration",
+        "Disappointment / Sadness",
+        "Fear / Anxiety",
+        "Neutral / Inquiry"
+    ],
+    "champion_model": "LightGBM",
+    "champion_metrics": {
+        "accuracy": 0.98525,
+        "macro_f1": 0.9537893203959594,
+        "weighted_f1": 0.9850934441351415,
+        "training_time_sec": 36.479
+    },
+    "all_benchmarks": [
+        {
+            "Model": "Multinomial Naive Bayes",
+            "Stage": "Baseline",
+            "Family": "Probabilistic",
+            "Accuracy": 0.7908,
+            "Macro Precision": 0.8407547523975948,
+            "Macro Recall": 0.4608221627992206,
+            "Macro F1": 0.5224833141165036,
+            "Weighted F1": 0.7631081269643705,
+            "Training Time (s)": 0.514,
+            "MLflow Run ID": "442028b072974ad9a759ea13047af75c"
+        },
+        {
+            "Model": "Logistic Regression",
+            "Stage": "Baseline",
+            "Family": "Linear",
+            "Accuracy": 0.9116,
+            "Macro Precision": 0.8455133486710705,
+            "Macro Recall": 0.9051083217135776,
+            "Macro F1": 0.8715124693979183,
+            "Weighted F1": 0.9139526485327806,
+            "Training Time (s)": 5.086,
+            "MLflow Run ID": "8899d54552c545429715edc4a500a28e"
+        },
+        {
+            "Model": "Linear Support Vector Machine",
+            "Stage": "Baseline",
+            "Family": "Max-Margin",
+            "Accuracy": 0.92785,
+            "Macro Precision": 0.8972299829704345,
+            "Macro Recall": 0.8908885136328129,
+            "Macro F1": 0.893881874569763,
+            "Weighted F1": 0.9279283560391115,
+            "Training Time (s)": 4.606,
+            "MLflow Run ID": "474f142db4f743928389d598597ab501"
+        },
+        {
+            "Model": "Random Forest",
+            "Stage": "Baseline",
+            "Family": "Ensemble (Bagging)",
+            "Accuracy": 0.77395,
+            "Macro Precision": 0.7041813879756946,
+            "Macro Recall": 0.8311446770405336,
+            "Macro F1": 0.7344295889591909,
+            "Weighted F1": 0.789559584832774,
+            "Training Time (s)": 1.714,
+            "MLflow Run ID": "4936435b4873465a96aed05915e1ee68"
+        },
+        {
+            "Model": "LightGBM",
+            "Stage": "Baseline",
+            "Family": "Gradient Boosting",
+            "Accuracy": 0.98525,
+            "Macro Precision": 0.970469518192629,
+            "Macro Recall": 0.9388505029586787,
+            "Macro F1": 0.9537893203959594,
+            "Weighted F1": 0.9850934441351415,
+            "Training Time (s)": 36.479,
+            "MLflow Run ID": "89cf665d73d441d7afcfdec46c49cf68"
+        },
+        {
+            "Model": "Tuned Logistic Regression",
+            "Stage": "Tuned (GridSearchCV)",
+            "Family": "Linear",
+            "Accuracy": 0.92725,
+            "Macro Precision": 0.8839951662015979,
+            "Macro Recall": 0.9042135725152967,
+            "Macro F1": 0.8930749012654351,
+            "Weighted F1": 0.9282173745754925,
+            "Training Time (s)": 39.25225114822388,
+            "MLflow Run ID": "fb2e8da035e84576aa23af5116f7289e",
+            "Best Params": {
+                "C": 5.0,
+                "class_weight": "balanced"
+            }
+        },
+        {
+            "Model": "Tuned LightGBM",
+            "Stage": "Tuned (GridSearchCV)",
+            "Family": "Gradient Boosting",
+            "Accuracy": 0.98525,
+            "Macro Precision": 0.970469518192629,
+            "Macro Recall": 0.9388505029586787,
+            "Macro F1": 0.9537893203959594,
+            "Weighted F1": 0.9850934441351415,
+            "Training Time (s)": 261.8454735279083,
+            "MLflow Run ID": "b65263bf2487462ba1440153f2e2bef2",
+            "Best Params": {
+                "learning_rate": 0.1,
+                "n_estimators": 100,
+                "num_leaves": 31
+            }
+        }
+    ],
+    "mlflow_experiment_name": "Customer_Support_Emotion_Classification_Exp4",
+    "mlflow_tracking_uri": "C:\\Users\\adity\\Desktop\\Projects\\ADS\\mlruns",
+    "total_runtime_sec": 452.43
+}

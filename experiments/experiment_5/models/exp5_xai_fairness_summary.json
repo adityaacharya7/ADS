@@ -1,0 +1,338 @@
+{
+  "experiment_title": "Experiment 5: Explainable AI (SHAP & LIME) & Algorithmic Fairness (Fairlearn)",
+  "timestamp": "2026-09-19 15:33:33",
+  "duration_seconds": 9.94,
+  "dataset_metadata": {
+    "dataset_name": "Adult Census Income (UCI ML / US Census Bureau)",
+    "total_instances": 32561,
+    "feature_names": [
+      "Age",
+      "Workclass",
+      "Education_Num",
+      "Marital_Status",
+      "Occupation",
+      "Relationship",
+      "Race",
+      "Sex",
+      "Capital_Gain",
+      "Capital_Loss",
+      "Hours_per_week",
+      "Country"
+    ],
+    "target_name": "Income_Over_50K",
+    "class_distribution": {
+      "<=50K (0)": 24720,
+      ">50K (1)": 7841,
+      "positive_rate": 0.2408095574460244
+    },
+    "sensitive_attributes": {
+      "Sex": {
+        "categories": {
+          "0": "Female",
+          "1": "Male"
+        },
+        "counts": {
+          "Female": 10771,
+          "Male": 21790
+        }
+      },
+      "Race": {
+        "categories": {
+          "0": "Amer-Indian-Eskimo",
+          "1": "Asian-Pac-Islander",
+          "2": "Black",
+          "3": "Other",
+          "4": "White"
+        },
+        "counts": {
+          "Amer-Indian-Eskimo": 311,
+          "Asian-Pac-Islander": 1039,
+          "Black": 3124,
+          "Other": 271,
+          "White": 27816
+        }
+      }
+    }
+  },
+  "modeling_benchmarks": {
+    "random_forest": {
+      "model": "Random Forest Baseline",
+      "accuracy": 0.8613542146476278,
+      "balanced_accuracy": 0.7582198185138564,
+      "precision": 0.8053259871441689,
+      "recall": 0.5593112244897959,
+      "f1": 0.6601430184418517,
+      "roc_auc": 0.9203212376962918
+    },
+    "champion_lightgbm": {
+      "model": "Champion LightGBM (Unmitigated)",
+      "accuracy": 0.876861661292799,
+      "balanced_accuracy": 0.8065410845834795,
+      "precision": 0.7862481315396114,
+      "recall": 0.6709183673469388,
+      "f1": 0.7240192704748796,
+      "roc_auc": 0.9309651704463384
+    }
+  },
+  "shap_explainability": {
+    "top_features_ranked": [
+      {
+        "Feature": "Relationship",
+        "Mean_Absolute_SHAP": 1.1619761458766882
+      },
+      {
+        "Feature": "Age",
+        "Mean_Absolute_SHAP": 0.8505937822711718
+      },
+      {
+        "Feature": "Capital_Gain",
+        "Mean_Absolute_SHAP": 0.6932091003781937
+      },
+      {
+        "Feature": "Education_Num",
+        "Mean_Absolute_SHAP": 0.5087994441797096
+      },
+      {
+        "Feature": "Hours_per_week",
+        "Mean_Absolute_SHAP": 0.4253381362082154
+      },
+      {
+        "Feature": "Occupation",
+        "Mean_Absolute_SHAP": 0.32994320152408063
+      },
+      {
+        "Feature": "Marital_Status",
+        "Mean_Absolute_SHAP": 0.21939786876554823
+      },
+      {
+        "Feature": "Capital_Loss",
+        "Mean_Absolute_SHAP": 0.15093171829892507
+      },
+      {
+        "Feature": "Sex",
+        "Mean_Absolute_SHAP": 0.14156582863726108
+      },
+      {
+        "Feature": "Race",
+        "Mean_Absolute_SHAP": 0.06173598579468269
+      },
+      {
+        "Feature": "Workclass",
+        "Mean_Absolute_SHAP": 0.0596934058218388
+      },
+      {
+        "Feature": "Country",
+        "Mean_Absolute_SHAP": 0.025927531453154434
+      }
+    ],
+    "sample_analyzed": 800,
+    "sample_0_actual": 0,
+    "sample_0_predicted": 0,
+    "sample_0_prob": 0.12443452847358545
+  },
+  "lime_explainability": {
+    "profiles": [
+      {
+        "profile": "High-Confidence Positive (>50K)",
+        "sample_index": 528,
+        "predicted_prob": 0.9997033029636908,
+        "actual_label": ">50K",
+        "top_rules": [
+          [
+            "Capital_Gain > 0.00",
+            0.6724272367316557
+          ],
+          [
+            "Education_Num > 12.00",
+            0.1099736867779777
+          ],
+          [
+            "3.00 < Relationship <= 4.00",
+            0.10577646699872999
+          ],
+          [
+            "Hours_per_week > 45.00",
+            0.09844013853279408
+          ],
+          [
+            "Capital_Loss <= 0.00",
+            -0.06688693319882358
+          ],
+          [
+            "37.00 < Age <= 48.00",
+            0.062445462743811395
+          ]
+        ]
+      },
+      {
+        "profile": "High-Confidence Negative (<=50K)",
+        "sample_index": 2069,
+        "predicted_prob": 3.49314864350489e-05,
+        "actual_label": "<=50K",
+        "top_rules": [
+          [
+            "Capital_Gain > 0.00",
+            0.7124766574028669
+          ],
+          [
+            "Hours_per_week <= 40.00",
+            -0.08657594791198663
+          ],
+          [
+            "Age <= 28.00",
+            -0.08634341468059628
+          ],
+          [
+            "0.00 < Relationship <= 3.00",
+            -0.0705176528226561
+          ],
+          [
+            "Capital_Loss <= 0.00",
+            -0.03560696588144284
+          ],
+          [
+            "2.00 < Marital_Status <= 4.00",
+            -0.027001227939750384
+          ]
+        ]
+      },
+      {
+        "profile": "Borderline Prediction (p~0.50)",
+        "sample_index": 3913,
+        "predicted_prob": 0.5004700416947514,
+        "actual_label": ">50K",
+        "top_rules": [
+          [
+            "Capital_Gain <= 0.00",
+            -0.6797470110212923
+          ],
+          [
+            "3.00 < Relationship <= 4.00",
+            0.09766580378454179
+          ],
+          [
+            "Capital_Loss <= 0.00",
+            -0.09478559547611182
+          ],
+          [
+            "Education_Num <= 9.00",
+            -0.09301738709990351
+          ],
+          [
+            "40.00 < Hours_per_week <= 45.00",
+            0.05866005912139373
+          ],
+          [
+            "Age > 48.00",
+            0.05015072949392639
+          ]
+        ]
+      }
+    ],
+    "sample_0_comparison": [
+      {
+        "Feature": "Education_Num",
+        "SHAP_Attribution": 1.8274693427807258,
+        "LIME_Attribution": 0.12192388358848581
+      },
+      {
+        "Feature": "Relationship",
+        "SHAP_Attribution": -1.4261829422691072,
+        "LIME_Attribution": -0.07317915184877641
+      },
+      {
+        "Feature": "Occupation",
+        "SHAP_Attribution": 0.4374017716772083,
+        "LIME_Attribution": -0.015488988333997823
+      },
+      {
+        "Feature": "Capital_Gain",
+        "SHAP_Attribution": -0.2639009992468827,
+        "LIME_Attribution": -0.6864232107077859
+      },
+      {
+        "Feature": "Marital_Status",
+        "SHAP_Attribution": -0.2524461019644502,
+        "LIME_Attribution": -0.03280280223098592
+      },
+      {
+        "Feature": "Sex",
+        "SHAP_Attribution": 0.12748808008787674,
+        "LIME_Attribution": 0.011360856982914228
+      },
+      {
+        "Feature": "Workclass",
+        "SHAP_Attribution": 0.10347006890541309,
+        "LIME_Attribution": -0.006804828338866952
+      }
+    ]
+  },
+  "fairness_and_mitigation": [
+    {
+      "Model Pipeline": "1. Baseline Unmitigated (LightGBM)",
+      "Accuracy": 0.876861661292799,
+      "Balanced Accuracy": 0.8065410845834795,
+      "F1-Score": 0.7240192704748796,
+      "Demographic Parity Diff (Sex)": 0.17140248710110245,
+      "Equalized Odds Diff (Sex)": 0.06107755297388924,
+      "Disparate Impact Ratio (Sex)": 0.34635916696558566,
+      "Demographic Parity Diff (Race)": 0.1752054794520548,
+      "Equalized Odds Diff (Race)": 0.3055555555555556
+    },
+    {
+      "Model Pipeline": "2. Pre-Processing (Reweighted)",
+      "Accuracy": 0.8691847075080608,
+      "Balanced Accuracy": 0.7871129619694187,
+      "F1-Score": 0.6983002832861189,
+      "Demographic Parity Diff (Sex)": 0.08673730513327707,
+      "Equalized Odds Diff (Sex)": 0.20287226001511716,
+      "Disparate Impact Ratio (Sex)": 0.6085585866783195,
+      "Demographic Parity Diff (Race)": 0.15833333333333333,
+      "Equalized Odds Diff (Race)": 0.3055555555555556
+    },
+    {
+      "Model Pipeline": "3. In-Processing (ExponentiatedGradient)",
+      "Accuracy": 0.8569015814524796,
+      "Balanced Accuracy": 0.7572474515589855,
+      "F1-Score": 0.6553254437869822,
+      "Demographic Parity Diff (Sex)": 0.09729849363008868,
+      "Equalized Odds Diff (Sex)": 0.06560846560846556,
+      "Disparate Impact Ratio (Sex)": 0.5291834002677376,
+      "Demographic Parity Diff (Race)": 0.22520547945205482,
+      "Equalized Odds Diff (Race)": 0.6666666666666667
+    },
+    {
+      "Model Pipeline": "4. Post-Processing (ThresholdOptimizer)",
+      "Accuracy": 0.8578228159066482,
+      "Balanced Accuracy": 0.7713555745857494,
+      "F1-Score": 0.671863926293409,
+      "Demographic Parity Diff (Sex)": 0.10845448383660936,
+      "Equalized Odds Diff (Sex)": 0.039304610733182144,
+      "Disparate Impact Ratio (Sex)": 0.5253072591875038,
+      "Demographic Parity Diff (Race)": 0.1433333333333333,
+      "Equalized Odds Diff (Race)": 0.3055555555555556
+    }
+  ],
+  "generated_artifacts": {
+    "plots": [
+      "exp5_fairness_audit_disparity.png",
+      "exp5_fairness_mitigation_tradeoff.png",
+      "exp5_lime_local_explanations.png",
+      "exp5_shap_beeswarm.png",
+      "exp5_shap_dependence.png",
+      "exp5_shap_summary_bar.png",
+      "exp5_shap_waterfall.png",
+      "exp5_xai_shap_vs_lime_comparison.png"
+    ],
+    "models": [
+      "mitigated_exponentiated_model.joblib",
+      "mitigated_reweighted_model.joblib",
+      "mitigated_threshold_model.joblib",
+      "unmitigated_champion_model.joblib"
+    ],
+    "reports": [
+      "bias_mitigation_benchmark.csv",
+      "fairness_audit_metrics.csv"
+    ]
+  }
+}

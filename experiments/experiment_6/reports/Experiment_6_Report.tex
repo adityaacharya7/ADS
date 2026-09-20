@@ -11,7 +11,6 @@
 \usepackage{float}
 \usepackage{microtype}
 \usepackage{xcolor}
-\usepackage{listings}
 
 \hypersetup{
     colorlinks=true,
@@ -21,7 +20,7 @@
 }
 
 \title{\textbf{Experiment 6: Containerization \& API Deployment with FastAPI and Docker}}
-\author{\textbf{Course:} Applied Data Science (ADS) \quad | \quad \textbf{Domain:} Production MLOps \& Cloud Serving}
+\author{\textbf{Course:} Applied Data Science (ADS) \quad | \quad \textbf{Domain:} Production MLOps \& Inference Serving}
 \date{\textbf{Frameworks:} FastAPI, Uvicorn, Docker, Pydantic \quad | \quad \textbf{Date:} September 2026}
 
 \begin{document}
@@ -29,7 +28,7 @@
 \maketitle
 
 \begin{abstract}
-Bridging the gap between empirical model development and production software engineering requires robust containerization, type-safe application programming interfaces (APIs), and resilient deployment architectures. This report presents the end-to-end containerization and production deployment of the Champion Twitter Customer Support Emotion and Sentiment Analysis pipeline. We implement an asynchronous REST microservice using \textbf{FastAPI} (ASGI) and \textbf{Pydantic v2}, exposing endpoints for real-time inference (\texttt{POST /predict}), vectorized batch processing (\texttt{POST /predict/batch}), liveness/readiness probing (\texttt{GET /health}), and interactive OpenAPI/Swagger documentation (\texttt{GET /docs}). To guarantee environment parity and zero-dependency host execution, we containerize the entire microservice using an enterprise-hardened \textbf{Docker} image based on \texttt{python:3.11-slim}, implementing non-root user execution, optimized layer caching, and automated container healthcheck probes. Rigorous automated testing demonstrates \textbf{100\% assertion pass rates}, robust handling of malformed payloads (HTTP 422), and ultra-low inference latency with a median of \textbf{21.83~ms} and throughput exceeding \textbf{31.8~req/sec} on single-thread execution.
+Bridging the gap between empirical model development and production software engineering requires robust containerization, type-safe application programming interfaces (APIs), and resilient deployment architectures. This report presents the end-to-end containerization and production deployment of the Champion Twitter Customer Support Emotion and Sentiment Analysis pipeline. We implement an asynchronous REST microservice using \textbf{FastAPI} (ASGI) and \textbf{Pydantic v2}, exposing endpoints for real-time inference (\texttt{POST /predict}), vectorized batch processing (\texttt{POST /predict/batch}), liveness/readiness probing (\texttt{GET /health}), and interactive OpenAPI/Swagger documentation (\texttt{GET /docs}). To guarantee environment parity and zero-dependency host execution, we containerize the entire microservice using an enterprise-hardened \textbf{Docker} image based on \texttt{python:3.11-slim}, implementing non-root user execution, optimized layer caching, and automated container healthcheck probes. The container was deployed live in Docker Desktop (\texttt{ads-emotion-microservice}, container ID \texttt{26fa0d6b10cf}) on port 8000 with continuous automated healthcheck verification. Rigorous automated testing demonstrates \textbf{100\% assertion pass rates}, robust handling of malformed payloads (HTTP 422), and ultra-low inference latency with a median of \textbf{21.83~ms} and throughput exceeding \textbf{31.8~req/sec} on single-thread execution.
 \end{abstract}
 
 \vspace{0.5em}
@@ -43,9 +42,9 @@ Bridging the gap between empirical model development and production software eng
 \begin{enumerate}[leftmargin=2em]
     \item Develop an asynchronous REST API using \textbf{FastAPI} and \textbf{Uvicorn} with strict Pydantic request/response validation schemas.
     \item Implement single (\texttt{/predict}) and vectorized batch (\texttt{/predict/batch}) inference endpoints returning calibrated emotion probabilities, sentiment polarity, and support triage urgency ratings.
-    \item Configure a production healthcheck endpoint (\texttt{/health}) tracking model loading status, uptime, and system health.
+    \item Configure an operational health probe endpoint (\texttt{/health}) tracking model loading status, uptime, and system health.
     \item Engineer a production-hardened \textbf{Dockerfile} and \texttt{docker-compose.yml} utilizing lightweight base images and non-root execution contexts.
-    \item Execute automated verification testing, measuring latency percentiles ($p_{50}, p_{95}, p_{99}$) and archiving test evidence.
+    \item Execute automated verification testing, measuring latency percentiles ($p_{50}, p_{95}, p_{99}$), validating Docker runtime logs, and capturing OpenAPI/Swagger UI evidence.
 \end{enumerate}
 
 \section{System Architecture \& Technical Design}
@@ -68,15 +67,23 @@ All incoming request payloads are strictly validated at the API boundary using P
 \end{itemize}
 
 \section{Docker Containerization \& Security Hardening}
-
-\subsection{Multi-Layer Dockerfile Design}
 The Dockerfile adopts cloud-native best practices:
 \begin{enumerate}[leftmargin=1.5em]
-    \item \textbf{Minimal Base Image:} Built upon \texttt{python:3.11-slim}, reducing the final image footprint from over 1.2~GB (full Linux distro) to under 350~MB, drastically shrinking the Common Vulnerabilities and Exposures (CVE) attack surface.
+    \item \textbf{Minimal Base Image:} Built upon \texttt{python:3.11-slim}, reducing the final image footprint from over 1.2~GB to under 350~MB, drastically shrinking the Common Vulnerabilities and Exposures (CVE) attack surface.
     \item \textbf{Optimal Layer Caching:} Dependencies (\texttt{requirements.txt}) are copied and installed in an isolated cache layer prior to copying application source code, preventing expensive re-installation during routine code changes.
     \item \textbf{Principle of Least Privilege (Non-Root Execution):} A dedicated system user and group (\texttt{appuser:appgroup}) is created. The container process executes without root privileges, mitigating container breakout vulnerabilities.
     \item \textbf{Native Healthcheck Probe:} Integrated \texttt{HEALTHCHECK} polling \texttt{http://localhost:8000/health} every 30 seconds ensures container orchestrators (Kubernetes, AWS ECS) automatically detect degraded instances.
 \end{enumerate}
+
+\section{Live Container Runtime Verification}
+The containerized service was deployed in Docker Desktop under container name \texttt{ads-emotion-microservice} (Container ID: \texttt{26fa0d6b10cf}) mapping port 8000:8000. Figure~\ref{fig:docker_runtime} displays the live container runtime logs capturing initial model unpickling and continuous automated HTTP 200 health probe polling.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{plots/exp6_docker_composite.png}
+    \caption{Live Docker Desktop Runtime Verification: (a) Container Initialization \& Model Loading; (b) Continuous Automated Healthcheck Probe Execution.}
+    \label{fig:docker_runtime}
+\end{figure}
 
 \section{Verification Suite \& Empirical Latency Benchmark}
 
@@ -115,13 +122,38 @@ Systematic latency profiling over 50 consecutive customer interactions yielded:
     \item \textbf{Estimated Throughput:} \textbf{31.8~requests/second} on a single CPU thread.
 \end{itemize}
 
+\section{Interactive OpenAPI / Swagger UI Verification}
+FastAPI automatically generates interactive OpenAPI 3.1 documentation accessible at \texttt{http://localhost:8000/docs}. Figure~\ref{fig:swagger_overview} illustrates the main service dashboard, while Figure~\ref{fig:swagger_predict} and Figure~\ref{fig:swagger_batch} document the single and batch inference data contracts.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.90\textwidth]{plots/exp6_swagger_ui_overview.png}
+    \caption{FastAPI Interactive OpenAPI (Swagger UI) Service Dashboard (\texttt{/docs}).}
+    \label{fig:swagger_overview}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{plots/exp6_swagger_predict_endpoint.png}
+    \caption{Single Inference Endpoint (\texttt{POST /predict}) Schema and Response Model.}
+    \label{fig:swagger_predict}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.80\textwidth]{plots/exp6_swagger_batch_composite.png}
+    \caption{Vectorized Batch Inference Endpoint (\texttt{POST /predict/batch}) Contract.}
+    \label{fig:swagger_batch}
+\end{figure}
+
 \section{Discussion \& Real-World Operational Impact}
 \begin{enumerate}[leftmargin=1.5em]
-    \item \textbf{Automated Ticket Triage:} By combining multi-label emotion probabilities with sentiment polarity, the microservice dynamically tags high-risk complaints (e.g., luggage loss or stranded flights) as \texttt{CRITICAL} priority, enabling customer support systems to route tickets to senior human supervisors within milliseconds.
+    \item \textbf{Automated Ticket Triage:} By combining multi-label emotion probabilities with sentiment polarity, the microservice dynamically tags high-risk complaints as \texttt{CRITICAL} priority, enabling customer support systems to route tickets to senior human supervisors within milliseconds.
     \item \textbf{Environment Reproducibility:} By encapsulating Python 3.11, pre-trained TF-IDF vectorizers, VADER lexicons, and serialized model weights inside a Docker container, deployment is completely decoupled from host operating system configurations.
+    \item \textbf{Horizontal Scalability:} The stateless design of the microservice allows horizontal autoscaling across Kubernetes pods behind ingress load balancers.
 \end{enumerate}
 
 \section{Conclusion}
-Experiment 6 successfully achieved the complete containerization and API deployment of the customer support emotion analysis system. The microservice demonstrates production-grade robustness, type-safe validation, sub-30ms median inference latency, and enterprise container security standards.
+Experiment 6 successfully achieved the complete containerization and API deployment of the customer support emotion analysis system. The microservice demonstrates production-grade robustness, type-safe validation, sub-30ms median inference latency, live Docker container verification, and enterprise container security standards.
 
 \end{document}

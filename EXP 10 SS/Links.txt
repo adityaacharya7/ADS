@@ -1,0 +1,24 @@
+================================================================================
+EXPERIMENT 8: ENTERPRISE STREAMLIT DASHBOARD & RESPONSIBLE AI PORTFOLIO
+OFFICIAL SUBMISSION LINKS & DEPLOYMENT ENDPOINTS
+================================================================================
+
+1. LIVE STREAMLIT CLOUD DASHBOARD:
+   https://adsproject.onrender.com
+   (Alternate Service URL: https://supportflow-ai.onrender.com)
+   Healthcheck Endpoint: https://adsproject.onrender.com/_stcore/health
+
+2. PUBLIC GITHUB SOURCE CODE REPOSITORY:
+   https://github.com/adityaacharya7/ADSproject
+   Branch: main (100% synchronized, production-hardened)
+
+3. RESPONSIBLE AI ETHICAL GOVERNANCE CHARTER:
+   https://github.com/adityaacharya7/ADSproject/blob/main/Responsible_AI.md
+   Framework: IEEE 7003 / Fairlearn / GDPR / NIST AI Risk Management Framework
+
+4. INTERACTIVE PORTFOLIO JUPYTER NOTEBOOK:
+   https://github.com/adityaacharya7/ADSproject/blob/main/notebooks/Experiment_8_Portfolio.ipynb
+
+5. COMPLETE COURSE CAPSTONE REPOSITORY:
+   https://github.com/adityaacharya7/ADS
+================================================================================

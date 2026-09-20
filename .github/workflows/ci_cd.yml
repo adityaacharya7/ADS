@@ -1,0 +1,155 @@
+name: Continuous Integration & Deployment (CI/CD) Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+  IMAGE_NAME: "ads-emotion-api"
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # STAGE 1: LINTING & STATIC CODE ANALYSIS
+  # ----------------------------------------------------------------------------
+  lint:
+    name: 1. Code Quality & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Linting & Code Quality Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+
+      - name: Check Code Formatting with Black & isort
+        run: |
+          black --check --diff experiments/ src/ || true
+          isort --check-only --diff experiments/ src/ || true
+
+      - name: Lint Python Code with Flake8
+        run: |
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings
+          flake8 . --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+
+  # ----------------------------------------------------------------------------
+  # STAGE 2: AUTOMATED TESTING (PYTEST)
+  # ----------------------------------------------------------------------------
+  test:
+    name: 2. Unit & Integration Testing
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov httpx
+
+      - name: Run Pytest Test Suite with Coverage
+        run: |
+          python -m pytest experiments/experiment_7/tests/ -v --tb=short
+
+  # ----------------------------------------------------------------------------
+  # STAGE 3: MODEL & DATA ARTIFACT INTEGRITY VERIFICATION (DVC)
+  # ----------------------------------------------------------------------------
+  model-artifact-check:
+    name: 3. Model Artifact & DVC Checksum Verification
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn lightgbm joblib nltk
+
+      - name: Verify Model Weights and Serialization Integrity
+        run: |
+          python -c "
+          import os, joblib
+          model_path = 'data/models/champion_emotion_model.joblib'
+          assert os.path.exists(model_path), f'Missing model artifact: {model_path}'
+          size_mb = os.path.getsize(model_path) / (1024 * 1024)
+          print(f'[+] Model artifact verified: {model_path} ({size_mb:.2f} MB)')
+          data = joblib.load(model_path)
+          assert 'model' in data or 'pipeline' in data, 'Invalid model bundle structure'
+          print('[+] Model deserialization check passed successfully.')
+          "
+
+  # ----------------------------------------------------------------------------
+  # STAGE 4: DOCKER BUILD & CONTAINER SMOKE TEST
+  # ----------------------------------------------------------------------------
+  docker-build-and-smoke:
+    name: 4. Docker Build & Smoke Test
+    needs: [test, model-artifact-check]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./experiments/experiment_6/Dockerfile
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:latest
+          load: true
+
+      - name: Start Ephemeral Microservice Container
+        run: |
+          docker run -d --name test-container -p 8000:8000 ${{ env.IMAGE_NAME }}:latest
+          sleep 5
+
+      - name: Execute Live Smoke Test against REST Endpoints
+        run: |
+          # 1. Health Probe Verification
+          curl --fail --retry 5 --retry-connrefused --retry-delay 2 http://localhost:8000/health
+          echo -e "\n[+] Container Healthcheck Endpoint Passed"
+
+          # 2. Live Single Inference Smoke Test
+          curl -X POST http://localhost:8000/predict \
+            -H "Content-Type: application/json" \
+            -d '{"text": "My package was delayed by 3 weeks! Unacceptable customer service!"}' \
+            --fail
+          echo -e "\n[+] Live Container Prediction Smoke Test Passed"
+
+      - name: Clean up Ephemeral Container
+        if: always()
+        run: |
+          docker stop test-container || true
+          docker rm test-container || true

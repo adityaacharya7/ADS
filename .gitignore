@@ -33,3 +33,7 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Separate standalone production repo for Railway deployment (Experiment 8)
+/ADS_Main_Production/
+ADS_Main_Production/

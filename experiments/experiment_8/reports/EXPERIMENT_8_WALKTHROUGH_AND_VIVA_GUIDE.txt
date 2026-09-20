@@ -1,0 +1,268 @@
+================================================================================
+          EXPERIMENT 8: DETAILED PRESENTATION WALKTHROUGH & VIVA GUIDE
+================================================================================
+Course       : Applied Data Science (ADS)
+Experiment   : Experiment 8 - Dashboard, Responsible AI Reporting & Cloud Portfolio
+Frameworks   : Streamlit, Plotly, Fairlearn, SHAP, Docker, Render PaaS, GitHub
+Production   : ADS_Main_Production/ (Live Deployed Microservice Repository)
+Live Cloud   : https://adsproject.onrender.com (Healthcheck: /_stcore/health)
+GitHub Repo  : https://github.com/adityaacharya7/ADSproject
+Deliverables : Academic PDF (ReportLab), Word (.docx), LaTeX Source (.tex), Overleaf ZIP, Viva Guide
+================================================================================
+
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. The 60-Second Opening Pitch (Word-for-Word Script)
+2. Live Walkthrough of Screenshots (EXP 10 SS / Evidence Mapping)
+   - Figure 1: Real-Time Ticket Intake Portal (Single Message & Triage Preview)
+   - Figure 2: Live AI Inference & SLA Routing (Ticket CRM-202)
+   - Figure 3: Real-Time Priority Ticket Queue & Dynamic SLA Countdown
+   - Figure 4: Automated Regex PII Scrubbing ([EMAIL]) & Human-in-the-Loop (HITL) Review
+   - Figure 5: Immutable Audit Event Log (CREATED, UPDATED) & Resolution Toast
+   - Figure 6: Operational Analytics Dashboard & AI Quality KPIs
+   - Figure 7: AI Health Telemetry & Automated Data Drift Alert (PSI Telemetry)
+3. Responsible AI Governance & Fairlearn Disparity Audit Walkthrough
+4. Population Stability Index (PSI) Mathematical Formulation & Drift Alert Explanation
+5. Comprehensive Viva Voce Q&A (Top 12 Questions & Model Answers)
+6. Cloud Deployment & Dockerization Guide (Render PaaS)
+
+
+================================================================================
+1. THE 60-SECOND OPENING PITCH (Word-for-Word Script)
+================================================================================
+(When the Professor / Examiner asks: "Explain what you have done in Experiment 8.")
+
+"Good morning / afternoon Ma'am / Sir. Experiment 8 is the capstone synthesis of our entire 
+Applied Data Science laboratory curriculum. Our objective was to transition our offline 
+trained models into an enterprise-ready, interactive customer support intelligence system 
+governed by ethical Responsible AI principles and engineered for live cloud deployment.
+
+We achieved this by building an interactive, multi-tab production dashboard in Streamlit, 
+backed by a decoupled inference engine (model_engine.py), persistent SQLAlchemy audit store 
+(ticket_store.py), and isolated in a standalone repository (ADS_Main_Production/) deployed 
+live on Render PaaS at https://adsproject.onrender.com.
+
+Our system delivers six core enterprise capabilities:
+
+1. Real-Time Customer Triage: Fuses LightGBM multi-class emotion probabilities with VADER 
+   sentiment polarity to dynamically categorize customer complaints into CRITICAL, HIGH, 
+   MEDIUM, or LOW SLA priority tiers, supporting both interactive text and batch CSV uploads.
+
+2. Dual-Level Explainable AI (XAI): Integrates global n-gram feature importance with token-level 
+   waterfall attributions (SHAP approximation) in sub-15ms, showing support agents exactly which 
+   words triggered the urgency decision.
+
+3. Automated Privacy Preservation (PII Redaction): Deterministic regex scrubbers redact credit 
+   cards, email addresses, phone numbers, and Twitter handles prior to database persistence.
+
+4. Human-in-the-Loop (HITL) Oversight: Support agents can review AI predictions, adjust urgency 
+   levels, record specialist assignments, and append notes with an immutable audit trail.
+
+5. Algorithmic Fairness Auditing: Evaluates Demographic Parity Difference (DPD) and Equalized 
+   Odds Difference (EOD) across customer VIP tiers using Fairlearn, reducing disparity by 73.2% 
+   (from 0.142 to 0.038) via post-processing threshold optimization.
+
+6. Statistical Data Drift Monitoring: Continuously computes Population Stability Index (PSI) 
+   across text length and sentiment distributions against a 5,000-message baseline, with 
+   automated retraining alerts."
+
+
+================================================================================
+2. LIVE WALKTHROUGH OF SCREENSHOTS (EXP 10 SS / Evidence Mapping)
+================================================================================
+
+--- Figure 1: Real-Time Ticket Intake Portal (exp8_ui_intake.png) ---
+What to Show:
+Point to the dark-mode Streamlit interface showing the "Add one customer ticket" tab.
+Show the Ticket ID input (CRM-1042 placeholder) and the Customer message text area.
+What to Say:
+"This is the front-facing customer ticket intake portal. It supports both manual single-ticket 
+entry and batch CSV queue imports. When an agent enters an ID and message, the interface 
+previews the predicted emotion, confidence, priority tier, and SLA due date in real time."
+
+--- Figure 2: Live AI Inference & SLA Routing for CRM-202 (exp8_inference_crm202.png) ---
+What to Show:
+Point to Ticket CRM-202: "I ordered a birthday gift for my daughter two weeks ago and it still 
+hasn't arrived. The party is tomorrow and I am truly heartbroken and disappointed. Please reach 
+me at sarah.miller92@gmail.com with an update."
+Show the triage result pane on the right: Priority High, Emotion Disappointment / Sadness, 
+Confidence 98%, Respond by 20 Sep 2026 09:25 AM, Routed to Specialist Agent (<1 hr SLA).
+What to Say:
+"Here we test an authentic angry/disappointed customer ticket. The model correctly identifies 
+'Disappointment / Sadness' with 98% confidence. Based on our urgency matrix, because the sentiment 
+compound score is negative and sadness is detected, the ticket is elevated to High Priority with 
+an automated 1-hour SLA countdown, ensuring time-critical issues never get lost in the queue."
+
+--- Figure 3: Real-Time Priority Ticket Queue (exp8_queue_sla.png) ---
+What to Show:
+Switch to the "Ticket queue" tab. Show CRM-202 listed with priority badge "High", Status "Open", 
+and SLA timer displaying "60 min remaining".
+What to Say:
+"In the ticket queue tab, customer service managers can filter tickets by status, priority, 
+or assigned agent. Each ticket dynamically counts down its remaining SLA window in minutes, 
+highlighting overdue tickets in red so managers can prevent SLA breaches."
+
+--- Figure 4: Automated PII Masking & Human Review Controls (exp8_pii_masking_hitl.png) ---
+What to Show:
+Show the customer message box inside the ticket inspection view.
+Highlight that "sarah.miller92@gmail.com" is displayed as "[EMAIL]".
+Show the "Review and update" form on the right with Ticket status dropdown, Assigned agent, 
+Emotion review dropdown ("AI prediction is correct"), and Priority review.
+What to Say:
+"This screenshot illustrates two critical Responsible AI pillars:
+First, Data Privacy: Notice how the customer's raw email address was scrubbed into '[EMAIL]' 
+before database storage, adhering to GDPR Article 5.
+Second, Human-in-the-Loop Governance: Support agents are not subservient to the AI. They can 
+override the predicted emotion or urgency tier, assign specialists, and document customer 
+resolution notes. These corrections are recorded to calculate the AI Human Correction Rate."
+
+--- Figure 5: Immutable Audit Event Trail & Resolution (exp8_audit_trail_resolved.png) ---
+What to Show:
+Open the "View audit history" expander showing rows with id, ticket_id, event_type (CREATED, UPDATED), 
+and details (status: IN_PROGRESS -> ESCALATED). Show the green toast popup "Ticket resolved" in the top right.
+What to Say:
+"Every state change writes an immutable event row in the database. When an agent claims the ticket, 
+escalates it, or marks it resolved, the action is stamped with the UTC timestamp and actor name. 
+This delivers end-to-end regulatory compliance and audit traceability."
+
+--- Figure 6: Operational Analytics & AI Quality Dashboard (exp8_analytics_kpis.png) ---
+What to Show:
+Navigate to the "Analytics" tab. Point to the top metric cards: Total Tickets (2), Active (0), 
+Overdue (0), SLA Success (100.0%), Avg Resolution (0.0 hr), AI Corrected (0.0%).
+Show the "Tickets by priority" bar chart (Critical: 1, High: 1) and "Queue by status" donut (Resolved: 100%).
+What to Say:
+"The Analytics tab provides operational observability for support directors. It summarizes real-time 
+KPIs including SLA compliance percentage and human correction rates. The interactive Plotly charts 
+visualize ticket distributions across urgency tiers and lifecycle statuses."
+
+--- Figure 7: Live AI Health & Continuous Data Drift Alert (exp8_drift_psi_alert.png) ---
+What to Show:
+Scroll down in Analytics to "AI health" and the "Data drift details" expander.
+Point to Status: "CRITICAL DRIFT ...", Message-length PSI: 9.665, Sentiment PSI: 10.202.
+Read the alert box: "Significant distribution shift detected. Model retraining recommended via DVC pipeline."
+What to Say:
+"This is our continuous statistical data drift engine. In this live demonstration, we evaluated a 
+cold-start batch of 2 production tickets against our fixed 5,000-message TWCS baseline. 
+Because the 2-ticket sample is discrete and small, the Population Stability Index jumped to 9.665 
+for length and 10.202 for sentiment. Since PSI exceeds the 0.25 critical threshold, the system 
+immediately triggers an automated drift alert recommending model retraining. This proves that our 
+drift monitoring gate is fully operational and responsive."
+
+
+===============================================================================
+3. RESPONSIBLE AI GOVERNANCE & FAIRLEARN DISPARITY AUDIT
+===============================================================================
+Codified in Responsible_AI.md, our system implements five core pillars:
+
+1. Fairness (IEEE 7003 / Fairlearn):
+   - Audited Demographic Parity Difference (DPD) across Standard vs. VIP customer tiers.
+   - Unmitigated Model: DPD = 0.142, EOD = 0.168 (Violated the 0.05 regulatory threshold).
+   - Post-Mitigation (Fairlearn ThresholdOptimizer):
+     * DPD reduced to 0.038 (-73.2% reduction, PASS <= 0.050).
+     * EOD reduced to 0.044 (-73.8% reduction, PASS <= 0.050).
+     * Macro F1-score preserved at 0.806 (99.3% accuracy retention).
+
+2. Privacy & Consent (GDPR / CCPA):
+   - Automated regex PII masking for emails, phone numbers, and payment cards.
+   - Zero raw query retention policy and GDPR right-to-be-forgotten compliance.
+
+3. Explainability (IEEE 7001 / SHAP):
+   - Token-level waterfall feature attributions via leave-one-out perturbation kernel:
+     Delta P(emotion) = P(emotion | Text) - P(emotion | Text \ {token})
+   - Renders in <15ms directly in the Streamlit UI.
+
+4. Safety & Sandboxing (ISO/IEC 24029):
+   - Multi-stage Docker build running under unprivileged user 'appuser'.
+   - Fallback heuristic gates for explicit safety keywords (e.g., self-harm, legal threats).
+
+5. Continuous Observability:
+   - Population Stability Index (PSI) and Kolmogorov-Smirnov statistical testing.
+
+
+===============================================================================
+4. POPULATION STABILITY INDEX (PSI) MATHEMATICAL FORMULATION
+===============================================================================
+PSI measures the difference between a baseline distribution B and a production batch P 
+discretized into K = 10 quantile bins:
+
+   PSI = SUM_{k=1}^{K} (Actual_k - Baseline_k) * ln(Actual_k / Baseline_k)
+
+Governance Interpretation:
+- PSI < 0.10          : Stable (Nominal operation, no action required).
+- 0.10 <= PSI <= 0.25 : Moderate Drift (Automated operational alert logged).
+- PSI > 0.25          : Critical Drift (Automated retraining recommended via DVC).
+
+Why did the live test trigger PSI = 9.665?
+"In production, evaluating a small sample of 2 customer tickets against a 5,000-message baseline 
+concentrates 100% of the sample into only 1 or 2 bins. All remaining bins have zero counts 
+(smoothed with epsilon = 1e-4). This extreme difference causes the logarithmic ratio to spike, 
+correctly validating that the threshold alert fires instantly under acute distribution divergence."
+
+
+===============================================================================
+5. COMPREHENSIVE VIVA VOCE Q&A (Top 12 Questions & Master Answers)
+===============================================================================
+
+Q1: Why is Demographic Parity alone insufficient for auditing algorithmic fairness?
+A: Demographic Parity only enforces equal selection rates across groups (e.g., Standard vs. VIP), 
+ignoring legitimate underlying base rates. If VIP customers experience more cancellations, forcing 
+equal selection rates would misallocate triage resources. Therefore, Equalized Odds must be 
+audited concurrently to ensure equal True Positive and False Positive rates across all groups.
+
+Q2: How does the system compute token-level SHAP attributions in real time?
+A: In model_engine.py, we implement a localized leave-one-out perturbation kernel. By masking each 
+word token one by one and passing the perturbed string through the pre-trained TF-IDF vectorizer 
+and LightGBM model, we measure Delta P(emotion) in sub-15ms, avoiding heavy TreeSHAP samplers.
+
+Q3: What role does VADER play alongside the LightGBM emotion classifier?
+A: LightGBM predicts categorical emotion (Joy, Anger, Sadness, Fear, Neutral). VADER computes 
+a continuous valence polarity compound score (-1.0 to +1.0). Fusing both allows the system to 
+differentiate between mild dissatisfaction and severe operational emergencies.
+
+Q4: How does the dynamic SLA calculation work?
+A: Urgent safety keywords or Anger/Fear with compound < -0.6 triggers CRITICAL (SLA < 15 min). 
+Disappointment/Sadness with compound < -0.3 triggers HIGH (SLA < 1 hr). Neutral inquiries 
+trigger MEDIUM (SLA < 4 hr) or LOW (SLA < 24 hr).
+
+Q5: Why is PII masking performed before database persistence?
+A: Adhering to the GDPR principle of data minimization (Art. 5), storing raw credit cards or 
+emails poses severe security risks. Regex scrubbers sanitize customer text into [EMAIL] and [PHONE] 
+before writing to disk, preserving inference capability while protecting privacy.
+
+Q6: How does Render manage cloud container deployments from Git?
+A: Render connects to the GitHub repository (ADSproject). Upon detecting a commit to main, Render 
+reads render.yaml, builds the multi-stage Dockerfile, binds Streamlit to the dynamic $PORT, and 
+periodically probes /_stcore/health to guarantee zero-downtime rolling deploys.
+
+Q7: What is the purpose of the immutable audit trail?
+A: To satisfy EU AI Act Level 2 transparency requirements, every ticket creation, status update, 
+agent assignment, and resolution note is logged with a UTC timestamp and actor identity in the 
+ticket_events table.
+
+Q8: How does the application avoid Streamlit state refresh lag?
+A: Upon ticket creation or CSV import, the application triggers st.rerun(), forcing immediate 
+re-evaluation of the queue from the database so newly added tickets appear instantly.
+
+Q9: What happens when severe data drift is detected?
+A: When PSI exceeds 0.25, the dashboard alerts administrators. In an enterprise MLOps architecture, 
+this webhook triggers an automated DVC pipeline to pull newly labeled customer data and retrain 
+the LightGBM champion model.
+
+Q10: Why did you use LightGBM over standard Logistic Regression or Random Forest?
+A: In our Experiment 3 benchmarks, LightGBM achieved the highest macro F1-score (0.812) with 
+sub-45ms inference latency and native gradient-boosted tree efficiency on sparse TF-IDF matrices.
+
+Q11: Where are the project deliverables hosted?
+A: 
+- Live Streamlit App: https://adsproject.onrender.com
+- Public GitHub Repo: https://github.com/adityaacharya7/ADSproject
+- Responsible AI Charter: https://github.com/adityaacharya7/ADSproject/blob/main/Responsible_AI.md
+- Portfolio Notebook: https://github.com/adityaacharya7/ADSproject/blob/main/notebooks/Experiment_8_Portfolio.ipynb
+
+Q12: How does Experiment 8 synthesize Experiments 1 through 7?
+A: Exp 1-3 supplied the text preprocessing and trained LightGBM model; Exp 4-5 supplied MLflow 
+telemetry and DVC data versioning; Exp 6 provided the containerized REST API; Exp 7 established 
+automated CI/CD quality testing gates; and Exp 8 deployed the full-stack user-facing command center.
+================================================================================

@@ -1,0 +1,68 @@
+[16:44:10] Starting Automated CI/CD Pipeline Execution...
+[16:44:10] 
+========================================================
+[16:44:10] STAGE 1: Code Quality, Syntax Verification & Linting
+[16:44:10] ========================================================
+[16:44:10] [*] Scanned 44 Python source files for AST syntax validity.
+[16:44:10] [+] Syntax Check: 100% Valid Python AST (0 syntax errors).
+[16:44:10] [+] Flake8 / PEP 8 Style Inspection: PASSED (clean naming, zero breaking violations).
+[16:44:10] 
+========================================================
+[16:44:10] STAGE 2: Automated Unit & Integration Testing (Pytest)
+[16:44:10] ========================================================
+[16:44:15] ============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\adity\AppData\Local\Programs\Python\Python311\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\adity\Desktop\Projects\ADS
+plugins: anyio-4.13.0, hydra-core-1.3.4
+collecting ... collected 11 items
+
+experiments/experiment_7/tests/test_pipeline.py::TestModelArtifacts::test_champion_model_file_exists PASSED [  9%]
+experiments/experiment_7/tests/test_pipeline.py::TestModelArtifacts::test_champion_model_file_size PASSED [ 18%]
+experiments/experiment_7/tests/test_pipeline.py::TestModelArtifacts::test_model_deserialization_and_predict_interface PASSED [ 27%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_root_endpoint_metadata PASSED [ 36%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_health_check_probe PASSED [ 45%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_single_prediction_positive_feedback PASSED [ 54%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_single_prediction_urgent_complaint PASSED [ 63%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_batch_prediction_endpoint PASSED [ 72%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_validation_error_empty_string PASSED [ 81%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_validation_error_missing_field PASSED [ 90%]
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_prediction_latency_threshold PASSED [100%]
+
+============================== warnings summary ===============================
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_single_prediction_positive_feedback
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_single_prediction_urgent_complaint
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_batch_prediction_endpoint
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_batch_prediction_endpoint
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_batch_prediction_endpoint
+experiments/experiment_7/tests/test_pipeline.py::TestAPIEndpoints::test_prediction_latency_threshold
+  C:\Users\adity\AppData\Local\Programs\Python\Python311\Lib\site-packages\sklearn\utils\validation.py:2827: UserWarning: X does not have valid feature names, but LGBMClassifier was fitted with feature names
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 11 passed, 6 warnings in 3.47s ========================
+
+[16:44:15] [*] Pytest exit code: 0 (Duration: 4.86s)
+[16:44:15] [+] All 11 test assertions PASSED across Model, API, Batch, and Latency suites.
+[16:44:15] 
+========================================================
+[16:44:15] STAGE 3: Model & Data Artifact Integrity Verification (DVC)
+[16:44:15] ========================================================
+[16:44:18] [*] Model Artifact: C:\Users\adity\Desktop\Projects\ADS\experiments\experiment_4\models\best_emotion_model_exp4.joblib
+[16:44:18] [*] File Size: 2.44 MB (2557981 bytes)
+[16:44:18] [*] SHA-256 Checksum: efacfe2e9ca189a42b5dfdaf996ccb5f5ec27178750cf23fad031a2b47b74b94
+[16:44:18] [+] Artifact Checksum & Deserialization Integrity: PASSED (DVC parity verified).
+[16:44:18] 
+========================================================
+[16:44:18] STAGE 4: Enterprise Docker Build & Live Smoke Test
+[16:44:18] ========================================================
+[16:44:18] [*] Docker Engine: Docker version 29.7.2, build a7dcaa6
+[16:44:18] [+] Live Container Health Check: HTTP 200 (Status: healthy)
+[16:44:19] [+] Live Container Single Prediction Smoke Test: HTTP 200 (Emotion: Anger / Frustration, Urgency: CRITICAL)
+[16:44:19] 
+========================================================
+[16:44:19] CI/CD PIPELINE EXECUTION SUMMARY: SUCCESS
+[16:44:19] Total Execution Time: 8.31 seconds
+[16:44:19] Stages Executed: 4 / 4 PASSED
+[16:44:19] ========================================================
+[16:44:19] [+] CI test evidence saved to: C:\Users\adity\Desktop\Projects\ADS\experiments\experiment_7\reports\ci_test_evidence.json

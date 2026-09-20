@@ -127,8 +127,8 @@ best practices in our Dockerfile:
 
 --- STEP 5: AUTOMATED TESTING & LATENCY PROFILING ---
 WHAT TO SHOW:
-- plots/exp6_api_latency_distribution.png (Latency histogram & KDE curve).
-- reports/api_test_evidence.json.
+- plots/exp6_api_latency_distribution.png (Figure 2: Latency histogram & KDE curve).
+- reports/api_test_evidence.json and Table 1 in reports/Experiment_6_Report.pdf.
 
 WHAT TO SAY:
 "We built an automated test runner in test_api.py. It tested 7 distinct scenarios: 
@@ -139,6 +139,32 @@ We then profiled latency across 50 consecutive requests. Median latency (p50) wa
 only 19.35 milliseconds, with a 95th percentile (p95) of 133 milliseconds and an estimated 
 single-thread throughput of ~35 requests per second, proving the API is ready for 
 high-volume real-time traffic."
+
+
+--- STEP 6: LIVE DOCKER DESKTOP EXECUTION & HEALTH LOGS ---
+WHAT TO SHOW:
+- plots/exp6_docker_composite.png (Figure 3 in Report & Word document).
+- Docker Desktop dashboard running container 'ads-emotion-microservice' (ID: 26fa0d6b10cf).
+
+WHAT TO SAY:
+"We executed the containerized microservice live on Docker Desktop under container ID 
+26fa0d6b10cf on port 8000:8000. As shown in Figure 3 of our report, our live container logs 
+demonstrate the Uvicorn ASGI lifecycle unpickling the pre-trained TF-IDF vectorizer and 
+LightGBM pipeline on startup, followed by continuous automated health probes (GET /health 
+HTTP/1.1 200 OK) polling every 30 seconds to maintain self-healing cluster readiness."
+
+
+--- STEP 7: INTERACTIVE OPENAPI / SWAGGER UI DOCUMENTATION ---
+WHAT TO SHOW:
+- plots/exp6_swagger_ui_overview.png (Figure 4: Main Swagger UI dashboard at http://localhost:8000/docs).
+- plots/exp6_swagger_predict_endpoint.png (Figure 5: POST /predict request/response schema).
+- plots/exp6_swagger_batch_composite.png (Figure 6: POST /predict/batch contract).
+
+WHAT TO SAY:
+"FastAPI natively introspects our Pydantic validation schemas to generate an interactive 
+OpenAPI 3.1 interface at http://localhost:8000/docs. Downstream engineers can test real-time 
+and batch prediction endpoints directly from the browser, inspect the JSON schema contracts, 
+and verify HTTP 422 error boundaries without needing Postman or external API clients."
 
 
 ================================================================================

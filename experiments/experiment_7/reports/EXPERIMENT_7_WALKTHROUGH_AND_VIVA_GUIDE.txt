@@ -1,0 +1,294 @@
+================================================================================
+          EXPERIMENT 7: DETAILED PRESENTATION WALKTHROUGH & VIVA GUIDE
+================================================================================
+Course       : Applied Data Science (ADS)
+Experiment   : Experiment 7 - CI/CD Pipeline with Open Source Tools
+Frameworks   : GitHub Actions, Pytest, DVC, Docker, Flake8, Python 3.11
+Model Served : Champion Customer Support Emotion Analysis Microservice (FastAPI)
+Pipeline File: .github/workflows/ci_cd.yml
+Deliverables : Academic PDF, Word (.docx), LaTeX Source, Overleaf ZIP, Workflow YAML
+================================================================================
+
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+1. The 60-Second Opening Pitch (Word-for-Word Script)
+2. Step-by-Step Walkthrough (What to Show vs. What to Say)
+   - Step 1: Declarative GitHub Actions Workflow YAML
+   - Step 2: Stage 1 - Code Quality & Static Linting (Flake8, AST)
+   - Step 3: Stage 2 - Automated Unit & Integration Testing (Pytest)
+   - Step 4: Stage 3 - Model Artifact & Checksum Integrity (DVC Pattern)
+   - Step 5: Stage 4 - Enterprise Docker Build & Live REST Smoke Testing
+3. Zero-Math Intuition: CI/CD, Quality Gates & DVC Explained Simply
+4. Key Statistics & Telemetry Cheat Sheet (Quick Memorization)
+5. Comprehensive Viva Voce Q&A (Top 18 Questions & Master Answers)
+6. Real-World Production MLOps, CT/CD & Cloud Deployment Blueprint
+
+
+================================================================================
+1. THE 60-SECOND OPENING PITCH (Word-for-Word Script)
+================================================================================
+(When the Professor / Examiner asks: "Explain what you have done in Experiment 7.")
+
+"Good morning / afternoon Ma'am / Sir. In Experiment 7, our core objective was to 
+eliminate the classic 'works on my machine' defect and automate the end-to-end 
+verification and deployment lifecycle of our Champion Customer Support Emotion API.
+
+Following modern enterprise MLOps standards, we designed and implemented a multi-stage 
+Continuous Integration and Continuous Deployment (CI/CD) pipeline using GitHub Actions, 
+Pytest, DVC, and Docker.
+
+Our pipeline establishes four sequential, fail-fast quality gates:
+
+1. Stage 1 (Linting & Static QA): Scans all 44 Python source files using Python AST 
+   compilation and Flake8 PEP 8 rules, catching syntax errors and unused imports in 0.06 seconds.
+
+2. Stage 2 (Automated Pytest Suite): Executes 11 unit and integration tests covering model 
+   deserialization, FastAPI root and /health probes, real-time emotion inference, batch streaming, 
+   HTTP 422 input validation, and sub-150ms latency SLAs with a 100% pass rate.
+
+3. Stage 3 (DVC Model Checksum): Validates the 2.44 MB champion model file and asserts 
+   its SHA-256 cryptographic hash (efacfe2e9ca...), ensuring zero model weight corruption.
+
+4. Stage 4 (Docker Build & Live Smoke Test): Packages the production container image, 
+   provisions an ephemeral container on port 8000, validates the /health probe (HTTP 200 OK), 
+   and fires live curl prediction requests to confirm real-time classification before release.
+
+The entire automated pipeline completes in 8.31 seconds with zero failures, proving our 
+system is fully production-ready for automated cloud deployments."
+
+
+================================================================================
+2. STEP-BY-STEP WALKTHROUGH (What to Show vs. What to Say)
+================================================================================
+
+--- STEP 1: DECLARATIVE WORKFLOW YAML (.github/workflows/ci_cd.yml) ---
+WHAT TO SHOW:
+- .github/workflows/ci_cd.yml in the repository root.
+- Figure 1 in reports/Experiment_7_Report.pdf (Architecture diagram).
+
+WHAT TO SAY:
+"We declared our automated CI/CD pipeline using a clean, modular YAML configuration in 
+.github/workflows/ci_cd.yml. It triggers automatically on every push or pull request to 
+the 'main' branch. Notice the job dependency graph: Stage 2 (test) and Stage 3 (model-check) 
+depend on Stage 1 (needs: [lint]), while Stage 4 (docker-build-and-smoke) requires both 
+tests and model checks to succeed. This fail-fast design conserves cloud runner resources 
+and prevents unverified code from ever reaching the containerization stage."
+
+
+--- STEP 2: STAGE 1 - CODE QUALITY & STATIC LINTING ---
+WHAT TO SHOW:
+- Stage 1 results in reports/ci_test_evidence.json and Table 1 of the report.
+- Flake8 / AST execution logs in reports/ci_execution_log.txt.
+
+WHAT TO SAY:
+"Stage 1 performs automated static code analysis. Instead of discovering runtime syntax 
+errors in production, our AST compiler and Flake8 linter scan all 44 Python source files 
+across experiments and src directories. It verifies PEP 8 compliance, line length limits, 
+and imports in just 0.06 seconds with zero syntax errors detected."
+
+
+--- STEP 3: STAGE 2 - PYTEST UNIT & INTEGRATION TESTING ---
+WHAT TO SHOW:
+- experiments/experiment_7/tests/test_pipeline.py.
+- Figure 2 in reports/Experiment_7_Report.pdf (Stage durations & 100% pass donut).
+
+WHAT TO SAY:
+"In Stage 2, Pytest executes 11 automated test assertions in 3.47 seconds. We evaluate:
+1. Model Artifact Integrity: Confirms file existence (>100KB) and .predict() interface.
+2. Endpoint Contracts: Verifies GET /, GET /health, POST /predict, and POST /predict/batch.
+3. Edge Case Error Handling: Asserts HTTP 422 Unprocessable Entity for empty or missing payloads.
+4. Latency SLA Assertion: Strictly asserts that prediction latency stays well below our 150ms 
+   production threshold. All 11 tests achieved a 100% pass rate."
+
+
+--- STEP 4: STAGE 3 - DVC MODEL ARTIFACT CHECKSUM VERIFICATION ---
+WHAT TO SHOW:
+- Stage 3 entry in reports/ci_test_evidence.json.
+- SHA-256 hash in reports/ci_execution_log.txt.
+
+WHAT TO SAY:
+"In Machine Learning, code can pass unit tests while model weights are corrupted or silently 
+stale. Stage 3 implements the DVC (Data Version Control) pattern: it checks that our 2.44 MB 
+champion model exists, validates its SHA-256 cryptographic hash (efacfe2e9ca...), and tests 
+joblib deserialization. This ensures the runner evaluates the exact model version approved 
+in Experiment 4 and 5."
+
+
+--- STEP 5: STAGE 4 - DOCKER BUILD & LIVE SMOKE TESTING ---
+WHAT TO SHOW:
+- Figure 3 (Runner Telemetry) & Figure 4 (Live Docker Runtime & Health Probe) in the report.
+- Stage 4 smoke test output in reports/ci_execution_log.txt.
+
+WHAT TO SAY:
+"Stage 4 is our final release gate. It builds the production Docker image (ads-emotion-api:latest), 
+spins up an ephemeral container on port 8000, and performs an integration smoke test over HTTP. 
+It queries GET /health (returning HTTP 200 OK healthy) and fires a live customer flight delay 
+complaint to POST /predict, verifying that the container outputs 'Anger / Frustration' with 
+'CRITICAL' urgency in under 25ms before terminating the container."
+
+
+================================================================================
+3. ZERO-MATH INTUITION: CI/CD, QUALITY GATES & DVC EXPLAINED SIMPLY
+================================================================================
+
+Q: What is CI/CD in plain English?
+A: Think of building software like assembling an airplane.
+   - Traditional Software: You assemble all the parts over 6 months, turn the key, 
+     and pray it flies. If it crashes, you don't know which of the 10,000 screws failed.
+   - Continuous Integration (CI): Every time an engineer tightens a single screw (git commit), 
+     an automated robot inspector immediately tests the torque, checks the metal alloy, 
+     and runs a simulation. If anything fails, the assembly line stops instantly.
+   - Continuous Deployment (CD): Once all robotic checks pass, the plane is automatically 
+     fueled and placed on the runway for passengers.
+
+Q: What is the difference between Unit Testing and Smoke Testing?
+A: - Unit Testing (Stage 2) is testing the car battery on a test bench with a voltmeter. 
+     You test isolated functions in memory.
+   - Smoke Testing (Stage 4) is putting the battery in the car, turning the ignition, 
+     and seeing if the engine starts without smoke coming out of the hood. You test the 
+     fully assembled system in its real container environment.
+
+Q: Why do we need DVC when we already have Git?
+A: Git was built for plain text files (code). If you commit a 2 GB neural network or 
+   500 MB dataset to Git, your repository becomes painfully slow to clone. DVC keeps small 
+   text pointer files (.dvc) in Git and stores the massive binary models in cloud storage 
+   (AWS S3, Google Cloud Storage), syncing them via cryptographic SHA-256 hashes.
+
+
+================================================================================
+4. KEY STATISTICS & TELEMETRY CHEAT SHEET (Quick Memorization)
+================================================================================
+- Overall CI Status     : SUCCESS (100% Pass Rate across all 4 stages)
+- Total CI Pipeline Time: 8.31 seconds
+- Source Files Scanned  : 44 Python files (0 AST syntax errors)
+- Automated Pytest Suite: 11 passed in 3.47 seconds (0 failures, 100% assertion match)
+- Model Artifact Size   : 2.44 MB (2,557,981 bytes)
+- Model SHA-256 Hash    : efacfe2e9ca189a42b5dfdaf996ccb5f5ec27178750cf23fad031a2b47b74b94
+- Docker Version Tested : Docker Engine v29.7.2
+- Healthcheck Response  : HTTP 200 OK (status: healthy, model_loaded: true)
+- Smoke Test Result     : HTTP 200 OK (Emotion: Anger / Frustration, Urgency: CRITICAL)
+
+
+================================================================================
+5. COMPREHENSIVE VIVA VOCE Q&A (Top 18 Questions & Master Answers)
+================================================================================
+
+Q1: What is a GitHub Actions Workflow and what file format does it use?
+A1: A workflow is an automated configurable process made up of one or more jobs. It is 
+    declared in YAML syntax and stored under the .github/workflows/ directory in the repository.
+
+Q2: What is the difference between an Event, a Job, and a Step in GitHub Actions?
+A2: - Event: The trigger that starts a workflow (e.g., git push, pull_request, workflow_dispatch).
+    - Job: A set of steps that execute on the same runner (e.g., lint, test, docker-build). 
+      Jobs run in parallel unless sequential dependencies are declared using 'needs'.
+    - Step: An individual task within a job, either running a shell command or invoking an action.
+
+Q3: Why did you use 'needs: [lint]' between Stage 1 and Stage 2?
+A3: To implement a fail-fast strategy. If code contains syntax errors or severe PEP 8 defects, 
+    running unit tests or downloading dependencies wastes CPU minutes. By making tests depend 
+    on linting, the pipeline halts immediately upon encountering code defects.
+
+Q4: How does GitHub Actions manage dependency caching?
+A4: Using actions/setup-python with cache: 'pip' or actions/cache@v4. It computes a cache key 
+    based on the hash of requirements.txt. If dependencies have not changed, the runner restores 
+    cached wheel files in seconds instead of re-downloading from PyPI.
+
+Q5: What is the purpose of Flake8 and AST compilation in Stage 1?
+A5: Python is an interpreted language; syntax errors are only discovered when that line is 
+    executed. The Python AST (Abstract Syntax Tree) compiler parses all 44 source files 
+    ahead-of-time without running them, guaranteeing 100% syntactic validity. Flake8 enforces 
+    PEP 8 style rules, detecting undefined variables and unused imports.
+
+Q6: What 4 categories of tests are evaluated in your Pytest suite?
+A6: 1. Model Artifact Integrity: File existence, minimum file size, and .predict() interface.
+    2. Endpoint Contracts: GET /, GET /health, POST /predict, and POST /predict/batch responses.
+    3. Input Validation Error Boundaries: HTTP 422 Unprocessable Entity for empty or malformed text.
+    4. Latency SLA Assertion: Strictly asserting response time stays below 150 milliseconds.
+
+Q7: What is DVC and how does it fit into the CI/CD pipeline?
+A7: DVC (Data Version Control) is an open-source tool that versions data and ML models alongside 
+    Git. In CI/CD, Git tracks the small .dvc text file containing the SHA-256 hash. The runner 
+    uses DVC to verify that the local model matches the exact cryptographic hash approved by 
+    the data science team before deploying.
+
+Q8: How did you verify the model integrity in Stage 3?
+A8: We verified that the model file exists, is over 100 KB (actual size: 2.44 MB), matches its 
+    expected SHA-256 hash (efacfe2e9ca...), and unpickles cleanly into an object implementing .predict().
+
+Q9: What is a container smoke test and why is it necessary?
+A9: A smoke test is a preliminary test that reveals simple failures severe enough to reject a release. 
+    Even if code passes unit tests on the host, differences in OS shared libraries (e.g., libgomp 
+    for LightGBM) can crash the container. The smoke test builds the real Docker image, launches it, 
+    and issues curl requests to /health and /predict to prove runtime viability.
+
+Q10: What happens if a step fails in GitHub Actions?
+A10: By default, if any step returns a non-zero exit code, the job fails immediately, downstream 
+     jobs marked with 'needs' are cancelled, the commit is flagged with a red cross (❌), and 
+     pull request merge buttons are blocked.
+
+Q11: How do you prevent breaking changes from reaching production?
+A11: By configuring GitHub Branch Protection Rules on the 'main' branch:
+     1. Require status checks to pass before merging (all 4 CI jobs must be green).
+     2. Require pull request reviews (at least 1 peer approval).
+     3. Require linear history and dismiss stale approvals on new commits.
+
+Q12: Compare GitHub Actions, GitLab CI, and Jenkins.
+A12: - GitHub Actions: Best for GitHub repositories; zero server management; managed cloud runners; 
+       native secret management.
+     - GitLab CI: Excellent built-in container registry and Kubernetes cluster integration via 
+       .gitlab-ci.yml; requires self-managed runners for on-premise GPU nodes.
+     - Jenkins: Older, highly customizable via plugins, but requires dedicated server management, 
+       complex Groovy pipeline scripts, and high maintenance overhead.
+
+Q13: What is the difference between Continuous Delivery and Continuous Deployment?
+A13: - Continuous Delivery: Every change that passes CI is built, tested, and staged in a releasable 
+       artifact (e.g., container image tagged in registry), requiring human approval to deploy to production.
+     - Continuous Deployment: Every change that passes all CI/CD gates is automatically released to 
+       production users with zero human intervention.
+
+Q14: What is Blue-Green Deployment and how does it prevent downtime?
+A14: Blue-Green deployment runs two identical production environments: Blue (currently serving live traffic) 
+     and Green (idle). The CD pipeline deploys the new container image to Green, runs healthchecks 
+     and smoke tests. Once verified, the load balancer router instantly switches traffic from Blue to Green. 
+     If an issue arises, traffic immediately switches back to Blue.
+
+Q15: What is Canary Deployment?
+A15: Canary deployment routes a tiny fraction of real user traffic (e.g., 5%) to the newly deployed 
+     container while 95% remains on the stable version. The system monitors error rates and latency. 
+     If telemetry remains healthy, traffic gradually shifts to 100%.
+
+Q16: How do you handle sensitive credentials (e.g., Docker Hub tokens, AWS keys) in GitHub Actions?
+A16: Credentials are never hardcoded in YAML files. They are encrypted and stored in GitHub Repository 
+     Secrets (Settings -> Secrets and variables -> Actions). In the workflow, they are injected securely 
+     as environment variables using secrets.DOCKER_PASSWORD.
+
+Q17: What is Continuous Training (CT) in MLOps?
+A17: Beyond CI and CD, Continuous Training (CT) automatically retrains and validates new model versions 
+     when incoming production data drifts or new training labels are committed via DVC.
+
+Q18: What exit code indicates success in shell scripts and CI runners?
+A18: Exit code 0 indicates success. Any non-zero exit code (1 to 255) signals an error or failure 
+     that halts the pipeline.
+
+
+================================================================================
+6. REAL-WORLD PRODUCTION MLOPS & CLOUD ARCHITECTURE
+================================================================================
+In enterprise environments, Experiment 7 represents the core engine of an automated MLOps platform:
+
+1. Code Repository (GitHub)
+   ├── Pull Request Trigger -> Runs Linting, Pytest, DVC Checksum & Smoke Test
+   └── Merge to main -> Tags Docker Image and pushes to GitHub Container Registry (ghcr.io)
+
+2. Kubernetes Cluster (EKS / GKE)
+   ├── Ingress Controller (NGINX / Envoy) routes traffic with TLS termination
+   ├── Horizontal Pod Autoscaler (HPA) scales pods based on CPU utilization and request volume
+   └── Automated Rollout -> Performs rolling update with zero user downtime
+
+3. Observability & Telemetry
+   ├── Prometheus polls /health and Prometheus metrics endpoint every 15s
+   ├── Grafana displays real-time latency percentiles (p50, p95, p99) and error rates
+   └── PagerDuty alerts engineering teams if error rate exceeds 0.5%
+================================================================================

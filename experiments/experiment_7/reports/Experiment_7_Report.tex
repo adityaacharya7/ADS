@@ -1,5 +1,5 @@
 \documentclass[11pt, a4paper]{article}
-\usepackage[a4paper, margin=0.85in]{geometry}
+\usepackage[a4paper, margin=0.75in]{geometry}
 \usepackage{mathptmx}
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
@@ -21,29 +21,29 @@
 
 \title{\textbf{Experiment 7: CI/CD Pipeline with Open Source Tools (GitHub Actions)}}
 \author{\textbf{Course:} Applied Data Science (ADS) \quad | \quad \textbf{Domain:} Production MLOps \& Continuous Delivery}
-\date{\textbf{Frameworks:} GitHub Actions, Pytest, DVC, Docker, Flake8 \quad | \quad \textbf{Date:} September 2026}
+\date{\textbf{Stack:} GitHub Actions, Pytest, DVC, Docker, Flake8 \quad | \quad \textbf{Date:} September 2026}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-Ensuring reliability, reproducibility, and zero-downtime deployment in modern machine learning systems requires automated Continuous Integration and Continuous Deployment (CI/CD) pipelines. This report presents the end-to-end design, implementation, and empirical verification of a multi-stage CI/CD pipeline using \textbf{GitHub Actions}, \textbf{Pytest}, \textbf{Data Version Control (DVC)}, and \textbf{Docker} for the Twitter Customer Support Emotion and Sentiment Analysis microservice. The automated pipeline establishes four sequential, fail-fast verification gates: (1) Static Code Analysis and PEP 8 Linting via Flake8 and Python AST compiler scanning 44 source files with zero syntax errors (19.00~s), (2) Automated Unit and Integration Testing with Pytest achieving a \textbf{100\% assertion pass rate} (11/11 passed in 3.47~s) and sub-150ms latency verification (median $p_{50}: 21.83$~ms, 90.00~s total job), (3) Model Artifact and DVC Checksum Integrity Verification validating the 2.44~MB champion model SHA-256 hash alongside \texttt{twcs\_cleaned.csv.dvc} tracking parity (89.00~s), and (4) Enterprise Docker Container Build and Live Smoke Testing asserting container health probe status (HTTP 200) and operational customer complaint classification (36.00~s). The entire workflow was verified on genuine \textbf{GitHub Actions cloud infrastructure (Run \#3: 35746806946 on \texttt{ubuntu-latest})} with a 100\% pass rate across all verification gates, guaranteeing that only robust, type-safe, and regression-free models are deployed to cloud production environments.
+Continuous Integration and Continuous Deployment (CI/CD) pipelines serve as the backbone of resilient machine learning systems by automating quality gates, preventing regression, and guaranteeing deployment environment parity. This report presents the design, cloud execution, and empirical validation of an enterprise-grade CI/CD pipeline implemented using \textbf{GitHub Actions}, \textbf{Pytest}, \textbf{Data Version Control (DVC)}, and \textbf{Docker}. Executed on GitHub Actions cloud infrastructure (Run \#3: \texttt{35746806946}, runner: \texttt{ubuntu-latest}), the workflow orchestrates four sequential validation gates: (1) Static Code Analysis and PEP 8 Linting across 44 repository Python source files, (2) Automated Pytest Suite verifying model deserialization, contract adherence, and inference latency ($p_{50}: 21.83$~ms, $p_{95}: 38.64$~ms), (3) Model Weight Cryptographic Integrity and DVC Dataset Tracking Parity (\texttt{9ee7774eca2eee789b89be74820ea2ce}, 28.2~MB), and (4) Container Compilation and Live HTTP Smoke Testing against \texttt{/health} and \texttt{/predict} endpoints. The pipeline achieved 100\% pass rates across all stages, demonstrating a production-ready MLOps continuous delivery framework.
 \end{abstract}
 
-\vspace{0.5em}
+\vspace{0.2em}
 \hrule
-\vspace{1em}
+\vspace{0.6em}
 
-\section{Aim \& Objectives}
-\textbf{Aim:} To automate testing, code quality verification, model version checks, and deployment using GitHub Actions and open-source MLOps tools.
+\section{Aim, Objectives \& Deliverables}
+\textbf{Aim:} To automate testing, code quality checks, version tracking, and containerized deployment using GitHub Actions and open-source MLOps tools.
 
 \noindent \textbf{Objectives:}
 \begin{enumerate}[leftmargin=2em]
-    \item Implement a declarative, modular GitHub Actions workflow (\texttt{.github/workflows/ci\_cd.yml}) triggered on code pushes and pull requests to the \texttt{main} branch.
-    \item Establish automated static code analysis, AST syntax verification, and PEP 8 style linting using \textbf{Flake8}, \textbf{Black}, and \textbf{isort}.
-    \item Develop an automated regression test suite using \textbf{Pytest} evaluating model deserialization, FastAPI endpoint contracts (\texttt{/health}, \texttt{/predict}, \texttt{/predict/batch}), and sub-150ms inference latency SLAs (median $p_{50}: 21.83$~ms).
-    \item Integrate model artifact integrity validation (DVC pattern) using SHA-256 cryptographic hash matching and serialization checks.
+    \item Design a modular GitHub Actions workflow (\texttt{.github/workflows/ci\_cd.yml}) triggered on pushes and pull requests to the main branch.
+    \item Automate static code analysis, PEP 8 linting, and Python AST syntax compilation across all 44 repository source files.
+    \item Implement an automated Pytest test suite evaluating model loading, API endpoint contracts, and sub-150ms latency SLAs (median $p_{50}: 21.83$~ms).
+    \item Enforce model artifact integrity and DVC dataset tracking parity using SHA-256 and MD5 cryptographic hashes.
     \item Automate enterprise Docker container packaging, ephemeral container provisioning, and live REST inference smoke testing.
 \end{enumerate}
 
@@ -51,7 +51,7 @@ Ensuring reliability, reproducibility, and zero-downtime deployment in modern ma
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{plots/exp7_ci_cd_architecture_diagram.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_ci_cd_architecture_diagram.png}
     \caption{Automated Multi-Stage CI/CD Pipeline Architecture and Deployment Workflow.}
     \label{fig:architecture}
 \end{figure}
@@ -70,7 +70,7 @@ The pipeline is declared as code within \texttt{.github/workflows/ci\_cd.yml}, l
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.88\textwidth]{plots/exp7_ci_pipeline_stages.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_ci_pipeline_stages.png}
     \caption{CI/CD Pipeline Stage Execution Duration and Assertion Distribution.}
     \label{fig:stage_metrics}
 \end{figure}
@@ -86,17 +86,17 @@ The pipeline is declared as code within \texttt{.github/workflows/ci\_cd.yml}, l
 \toprule
 \textbf{Pipeline Stage} & \textbf{Engine / Tooling} & \textbf{Duration} & \textbf{Outcome} \\
 \midrule
-1. Code Quality \& Linting & Flake8, Black, isort \& Python AST Compiler & 19.00~s & \textbf{PASS} \\
-2. Unit \& Integration Testing & Pytest 9.1 \& FastAPI TestClient & 90.00~s & \textbf{PASS} \\
-3. Model Artifact \& DVC Checksum Verification & DVC 3.63, SHA-256 \& Joblib & 89.00~s & \textbf{PASS} \\
-4. Docker Build \& Container Smoke Test & Docker Buildx v29.x \& HTTP Live Smoke Test & 36.00~s & \textbf{PASS} \\
+1. Code Quality & Linting & Flake8, Black, isort & Python AST Compiler & 19.00 s & \textbf{PASS} \\
+2. Unit & Integration Testing & Pytest 9.1 & FastAPI TestClient & 90.00 s & \textbf{PASS} \\
+3. Model Artifact & DVC Checksum Verification & DVC 3.63, SHA-256 & Joblib & 89.00 s & \textbf{PASS} \\
+4. Docker Build & Container Smoke Test & Docker Buildx v29.x & HTTP Live Smoke Test & 36.00 s & \textbf{PASS} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\textwidth]{plots/exp7_ci_terminal_execution.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_ci_terminal_execution.png}
     \caption{GitHub Actions Cloud Runner Execution Telemetry and Validation Log Output (ubuntu-latest).}
     \label{fig:runner_telemetry}
 \end{figure}
@@ -115,7 +115,7 @@ Stage 4 encapsulates the FastAPI microservice into the \texttt{ads-emotion-api:l
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\textwidth]{plots/exp7_docker_smoke_test.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_docker_smoke_test.png}
     \caption{Live Docker Container Build, Healthcheck Probing, and Prediction Smoke Test.}
     \label{fig:docker_smoke}
 \end{figure}

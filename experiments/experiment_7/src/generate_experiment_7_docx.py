@@ -197,12 +197,13 @@ def generate_experiment_7_docx(output_docx_path: str = None):
         r.font.color.rgb = RGBColor(0x24, 0x29, 0x2E)
         doc.add_paragraph().paragraph_format.space_after = Pt(3)
 
-    def add_image_centered(img_path, width_inches=5.8, caption=None):
+    def add_image_centered(img_path, width_inches=6.6, caption=None):
         if Path(img_path).exists():
             p = doc.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p.paragraph_format.space_before = Pt(6)
             p.paragraph_format.space_after = Pt(2)
+            p.paragraph_format.keep_with_next = True
             run = p.add_run()
             run.add_picture(str(img_path), width=Inches(width_inches))
             if caption:
@@ -275,7 +276,7 @@ def generate_experiment_7_docx(output_docx_path: str = None):
         "CI/CD workflow orchestrates four sequential, dependent jobs designed to fail fast upon encountering syntax defects, "
         "broken contracts, corrupted model weights, or degraded container runtimes."
     )
-    add_image_centered(PLOTS_DIR / "exp7_ci_cd_architecture_diagram.png", width_inches=6.2, caption="Figure 1: Automated Multi-Stage CI/CD Pipeline Architecture and Deployment Workflow.")
+    add_image_centered(PLOTS_DIR / "exp7_ci_cd_architecture_diagram.png", width_inches=6.6, caption="Figure 1: Automated Multi-Stage CI/CD Pipeline Architecture and Deployment Workflow.")
 
     # -------------------------------------------------------------------------
     # SECTION 3: WORKFLOW SPECIFICATION
@@ -336,8 +337,8 @@ def generate_experiment_7_docx(output_docx_path: str = None):
         r_tc.italic = True
         r_tc.font.size = Pt(9)
 
-    add_image_centered(PLOTS_DIR / "exp7_ci_pipeline_stages.png", width_inches=5.8, caption="Figure 2: CI/CD Pipeline Stage Execution Duration and Assertion Distribution.")
-    add_image_centered(PLOTS_DIR / "exp7_ci_terminal_execution.png", width_inches=6.0, caption="Figure 3: GitHub Actions Cloud Runner Execution Telemetry and Validation Log Output (ubuntu-latest).")
+    add_image_centered(PLOTS_DIR / "exp7_ci_pipeline_stages.png", width_inches=6.6, caption="Figure 2: CI/CD Pipeline Stage Execution Duration and Assertion Distribution.")
+    add_image_centered(PLOTS_DIR / "exp7_ci_terminal_execution.png", width_inches=6.6, caption="Figure 3: GitHub Actions Cloud Runner Execution Telemetry and Validation Log Output (ubuntu-latest).")
 
     add_heading_2("4.1 Data Version Control (DVC) Artifact Tracking & Checksum Parity")
     add_p(
@@ -359,7 +360,7 @@ def generate_experiment_7_docx(output_docx_path: str = None):
         "and produces expected inference predictions for high-priority support complaints. Figure 4 displays the live container "
         "runtime logs and health probe telemetry verified during pipeline execution:"
     )
-    add_image_centered(PLOTS_DIR / "exp7_docker_smoke_test.png", width_inches=6.0, caption="Figure 4: Live Docker Container Build, Healthcheck Probing, and Prediction Smoke Test.")
+    add_image_centered(PLOTS_DIR / "exp7_docker_smoke_test.png", width_inches=6.6, caption="Figure 4: Live Docker Container Build, Healthcheck Probing, and Prediction Smoke Test.")
 
     # -------------------------------------------------------------------------
     # SECTION 6: OPEN-SOURCE TOOLS COMPARISON

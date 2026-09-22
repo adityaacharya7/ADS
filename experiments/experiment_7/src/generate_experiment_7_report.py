@@ -1,9 +1,10 @@
 """
 Academic Report Generator for Experiment 7:
-CI/CD Pipeline with Open Source Tools (GitHub Actions, Pytest, DVC, Docker).
+CI/CD Pipeline with Open Source Tools (GitHub Actions).
 
 Generates:
 1. Publication-quality Academic PDF report via ReportLab (Experiment_7_Report.pdf)
+   featuring LARGE, high-resolution, full-width embedded screenshots and diagrams.
 2. Complete IEEE/ACM-style LaTeX source file (Experiment_7_Report.tex)
 3. Self-contained Overleaf upload zip bundle (Experiment_7_Overleaf_Package.zip)
 """
@@ -12,7 +13,7 @@ import os
 import json
 import zipfile
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -20,6 +21,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, Image, HRFlowable, Preformatted
 )
 from reportlab.lib import colors
+from reportlab.pdfgen import canvas
 from PIL import Image as PILImage
 
 EXPERIMENT_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +40,69 @@ def load_ci_evidence() -> Dict[str, Any]:
 
 
 # ------------------------------------------------------------------------------
-# 1. LATEX REPORT GENERATION
+# 1. NUMBERED CANVAS WITH RUNNING HEADERS & FOOTERS
+# ------------------------------------------------------------------------------
+
+class NumberedCanvas(canvas.Canvas):
+    """Two-pass canvas for dynamic total page counting and academic running headers/footers."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_decorations(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_decorations(self, page_count):
+        self.saveState()
+        self.setFont("Times-Roman", 8)
+        self.setFillColor(colors.HexColor("#64748B"))
+
+        # Running header on pages 2+
+        if self._pageNumber > 1:
+            self.drawString(38, 812, "Experiment 7: CI/CD Pipeline with Open Source Tools (GitHub Actions)")
+            self.setStrokeColor(colors.HexColor("#CBD5E1"))
+            self.setLineWidth(0.5)
+            self.line(38, 806, 595.27 - 38, 806)
+
+        # Running footer on all pages
+        page_text = f"Page {self._pageNumber} of {page_count}"
+        self.drawRightString(595.27 - 38, 18, page_text)
+        self.drawString(38, 18, "Applied Data Science (ADS) | Continuous Integration & Deployment Telemetry")
+        self.setStrokeColor(colors.HexColor("#CBD5E1"))
+        self.setLineWidth(0.5)
+        self.line(38, 26, 595.27 - 38, 26)
+        self.restoreState()
+
+
+# ------------------------------------------------------------------------------
+# 2. IMAGE SCALING UTILITIES (LARGE FULL-WIDTH RENDERING)
+# ------------------------------------------------------------------------------
+
+def get_large_image(image_path: Path, target_width: float = 515, max_height: float = 340) -> Image:
+    """Creates a ReportLab Image scaled with strict aspect ratio preservation to maximize legibility."""
+    if not image_path.exists():
+        raise FileNotFoundError(f"Image not found: {image_path}")
+    with PILImage.open(image_path) as im:
+        orig_w, orig_h = im.size
+    aspect = orig_h / orig_w
+    target_height = target_width * aspect
+    if max_height and target_height > max_height:
+        target_height = max_height
+        target_width = target_height / aspect
+    return Image(str(image_path), width=target_width, height=target_height)
+
+
+# ------------------------------------------------------------------------------
+# 3. LATEX REPORT GENERATION
 # ------------------------------------------------------------------------------
 
 def generate_experiment_7_latex(evidence: Dict[str, Any], output_tex_path: str = None) -> str:
@@ -59,20 +123,15 @@ def generate_experiment_7_latex(evidence: Dict[str, Any], output_tex_path: str =
         with open(dvc_log_file, "r", encoding="utf-8") as f:
             dvc_log = f.read()
 
-    stages = evidence.get("stages", [])
     table_rows = []
-    for st in stages:
-        s_name = st["stage_name"].replace("&", "\\&")
-        tool = st["tool"].replace("&", "\\&").replace("_", "\\_")
-        dur = f"{st['duration_sec']:.2f}~s"
-        status = "\\textbf{PASS}" if st.get("status") == "PASS" else "\\textbf{FAIL}"
-        table_rows.append(f"{s_name} & {tool} & {dur} & {status} \\\\")
+    for st in evidence.get("stages", []):
+        table_rows.append(
+            f"{st['stage_name']} & {st['tool']} & {st['duration_sec']:.2f} s & \\textbf{{{st['status']}}} \\\\"
+        )
     table_latex_str = "\n".join(table_rows)
 
-    total_dur = evidence.get("total_duration_sec", 234.0)
-
     tex_code = r"""\documentclass[11pt, a4paper]{article}
-\usepackage[a4paper, margin=0.85in]{geometry}
+\usepackage[a4paper, margin=0.75in]{geometry}
 \usepackage{mathptmx}
 \usepackage{amsmath, amssymb}
 \usepackage{graphicx}
@@ -94,29 +153,29 @@ def generate_experiment_7_latex(evidence: Dict[str, Any], output_tex_path: str =
 
 \title{\textbf{Experiment 7: CI/CD Pipeline with Open Source Tools (GitHub Actions)}}
 \author{\textbf{Course:} Applied Data Science (ADS) \quad | \quad \textbf{Domain:} Production MLOps \& Continuous Delivery}
-\date{\textbf{Frameworks:} GitHub Actions, Pytest, DVC, Docker, Flake8 \quad | \quad \textbf{Date:} September 2026}
+\date{\textbf{Stack:} GitHub Actions, Pytest, DVC, Docker, Flake8 \quad | \quad \textbf{Date:} September 2026}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-Ensuring reliability, reproducibility, and zero-downtime deployment in modern machine learning systems requires automated Continuous Integration and Continuous Deployment (CI/CD) pipelines. This report presents the end-to-end design, implementation, and empirical verification of a multi-stage CI/CD pipeline using \textbf{GitHub Actions}, \textbf{Pytest}, \textbf{Data Version Control (DVC)}, and \textbf{Docker} for the Twitter Customer Support Emotion and Sentiment Analysis microservice. The automated pipeline establishes four sequential, fail-fast verification gates: (1) Static Code Analysis and PEP 8 Linting via Flake8 and Python AST compiler scanning 44 source files with zero syntax errors (19.00~s), (2) Automated Unit and Integration Testing with Pytest achieving a \textbf{100\% assertion pass rate} (11/11 passed in 3.47~s) and sub-150ms latency verification (median $p_{50}: 21.83$~ms, 90.00~s total job), (3) Model Artifact and DVC Checksum Integrity Verification validating the 2.44~MB champion model SHA-256 hash alongside \texttt{twcs\_cleaned.csv.dvc} tracking parity (89.00~s), and (4) Enterprise Docker Container Build and Live Smoke Testing asserting container health probe status (HTTP 200) and operational customer complaint classification (36.00~s). The entire workflow was verified on genuine \textbf{GitHub Actions cloud infrastructure (Run \#3: 35746806946 on \texttt{ubuntu-latest})} with a 100\% pass rate across all verification gates, guaranteeing that only robust, type-safe, and regression-free models are deployed to cloud production environments.
+Continuous Integration and Continuous Deployment (CI/CD) pipelines serve as the backbone of resilient machine learning systems by automating quality gates, preventing regression, and guaranteeing deployment environment parity. This report presents the design, cloud execution, and empirical validation of an enterprise-grade CI/CD pipeline implemented using \textbf{GitHub Actions}, \textbf{Pytest}, \textbf{Data Version Control (DVC)}, and \textbf{Docker}. Executed on GitHub Actions cloud infrastructure (Run \#3: \texttt{35746806946}, runner: \texttt{ubuntu-latest}), the workflow orchestrates four sequential validation gates: (1) Static Code Analysis and PEP 8 Linting across 44 repository Python source files, (2) Automated Pytest Suite verifying model deserialization, contract adherence, and inference latency ($p_{50}: 21.83$~ms, $p_{95}: 38.64$~ms), (3) Model Weight Cryptographic Integrity and DVC Dataset Tracking Parity (\texttt{9ee7774eca2eee789b89be74820ea2ce}, 28.2~MB), and (4) Container Compilation and Live HTTP Smoke Testing against \texttt{/health} and \texttt{/predict} endpoints. The pipeline achieved 100\% pass rates across all stages, demonstrating a production-ready MLOps continuous delivery framework.
 \end{abstract}
 
-\vspace{0.5em}
+\vspace{0.2em}
 \hrule
-\vspace{1em}
+\vspace{0.6em}
 
-\section{Aim \& Objectives}
-\textbf{Aim:} To automate testing, code quality verification, model version checks, and deployment using GitHub Actions and open-source MLOps tools.
+\section{Aim, Objectives \& Deliverables}
+\textbf{Aim:} To automate testing, code quality checks, version tracking, and containerized deployment using GitHub Actions and open-source MLOps tools.
 
 \noindent \textbf{Objectives:}
 \begin{enumerate}[leftmargin=2em]
-    \item Implement a declarative, modular GitHub Actions workflow (\texttt{.github/workflows/ci\_cd.yml}) triggered on code pushes and pull requests to the \texttt{main} branch.
-    \item Establish automated static code analysis, AST syntax verification, and PEP 8 style linting using \textbf{Flake8}, \textbf{Black}, and \textbf{isort}.
-    \item Develop an automated regression test suite using \textbf{Pytest} evaluating model deserialization, FastAPI endpoint contracts (\texttt{/health}, \texttt{/predict}, \texttt{/predict/batch}), and sub-150ms inference latency SLAs (median $p_{50}: 21.83$~ms).
-    \item Integrate model artifact integrity validation (DVC pattern) using SHA-256 cryptographic hash matching and serialization checks.
+    \item Design a modular GitHub Actions workflow (\texttt{.github/workflows/ci\_cd.yml}) triggered on pushes and pull requests to the main branch.
+    \item Automate static code analysis, PEP 8 linting, and Python AST syntax compilation across all 44 repository source files.
+    \item Implement an automated Pytest test suite evaluating model loading, API endpoint contracts, and sub-150ms latency SLAs (median $p_{50}: 21.83$~ms).
+    \item Enforce model artifact integrity and DVC dataset tracking parity using SHA-256 and MD5 cryptographic hashes.
     \item Automate enterprise Docker container packaging, ephemeral container provisioning, and live REST inference smoke testing.
 \end{enumerate}
 
@@ -124,7 +183,7 @@ Ensuring reliability, reproducibility, and zero-downtime deployment in modern ma
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{plots/exp7_ci_cd_architecture_diagram.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_ci_cd_architecture_diagram.png}
     \caption{Automated Multi-Stage CI/CD Pipeline Architecture and Deployment Workflow.}
     \label{fig:architecture}
 \end{figure}
@@ -143,7 +202,7 @@ The pipeline is declared as code within \texttt{.github/workflows/ci\_cd.yml}, l
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.88\textwidth]{plots/exp7_ci_pipeline_stages.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_ci_pipeline_stages.png}
     \caption{CI/CD Pipeline Stage Execution Duration and Assertion Distribution.}
     \label{fig:stage_metrics}
 \end{figure}
@@ -166,7 +225,7 @@ The pipeline is declared as code within \texttt{.github/workflows/ci\_cd.yml}, l
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\textwidth]{plots/exp7_ci_terminal_execution.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_ci_terminal_execution.png}
     \caption{GitHub Actions Cloud Runner Execution Telemetry and Validation Log Output (ubuntu-latest).}
     \label{fig:runner_telemetry}
 \end{figure}
@@ -185,7 +244,7 @@ Stage 4 encapsulates the FastAPI microservice into the \texttt{ads-emotion-api:l
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\textwidth]{plots/exp7_docker_smoke_test.png}
+    \includegraphics[width=0.98\textwidth]{plots/exp7_docker_smoke_test.png}
     \caption{Live Docker Container Build, Healthcheck Probing, and Prediction Smoke Test.}
     \label{fig:docker_smoke}
 \end{figure}
@@ -244,36 +303,22 @@ Below is the verbatim execution log of the DVC retrieval operation (\texttt{dvc 
 
 
 # ------------------------------------------------------------------------------
-# 2. REPORTLAB ACADEMIC PDF GENERATION
+# 4. REPORTLAB ACADEMIC PDF GENERATION (LARGE FULL-WIDTH SCREENSHOT LAYOUT)
 # ------------------------------------------------------------------------------
 
-def get_proportional_image(image_path: Path, target_width: float = 500, max_height: float = None) -> Image:
-    """Creates a ReportLab Image scaled with strict aspect ratio preservation."""
-    with PILImage.open(image_path) as im:
-        orig_w, orig_h = im.size
-    aspect = orig_h / orig_w
-    target_height = target_width * aspect
-    if max_height and target_height > max_height:
-        target_height = max_height
-        target_width = target_height / aspect
-    return Image(str(image_path), width=target_width, height=target_height)
-
-
 def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = None):
-    """Generates publication-quality academic PDF report via ReportLab (4 pages)."""
+    """Generates publication-quality academic PDF report via ReportLab with large, highly legible figures."""
     if output_pdf_path is None:
         output_pdf_path = str(REPORTS_DIR / "Experiment_7_Report.pdf")
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
-
-    total_dur = evidence.get("total_duration_sec", 8.31)
 
     doc = SimpleDocTemplate(
         output_pdf_path,
         pagesize=A4,
         leftMargin=38,
         rightMargin=38,
-        topMargin=34,
-        bottomMargin=34
+        topMargin=32,
+        bottomMargin=32
     )
 
     story = []
@@ -302,14 +347,14 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
         'TableHead', fontName='Times-Bold', fontSize=8, leading=10, textColor=colors.white
     )
     caption_style = ParagraphStyle(
-        'FigCap', fontName='Times-Italic', fontSize=8, leading=10.5, alignment=1, spaceBefore=3, spaceAfter=4
+        'FigCap', fontName='Times-Italic', fontSize=8.2, leading=10.5, alignment=1, spaceBefore=3, spaceAfter=4
     )
     code_style = ParagraphStyle(
         'CodeStyle', fontName='Courier', fontSize=6.2, leading=7.8, textColor=colors.HexColor('#24292E')
     )
 
     # =========================================================================
-    # PAGE 1: TITLE, OBJECTIVES & CI/CD ARCHITECTURE
+    # PAGE 1: TITLE, OBJECTIVES & CI/CD ARCHITECTURE (FIGURE 1 LARGE)
     # =========================================================================
     story.append(Paragraph("Experiment 7", title_style))
     story.append(Paragraph(
@@ -324,8 +369,8 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
         "<b>Tools:</b> GitHub Actions, Pytest, DVC, Docker, Flake8",
         body_style
     ))
-    story.append(Spacer(1, 3))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#1E3A8A"), spaceAfter=4))
+    story.append(Spacer(1, 2))
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#1E3A8A"), spaceAfter=3))
 
     story.append(Paragraph("<b>Objectives:</b>", section_style))
     objs = [
@@ -337,7 +382,7 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
     ]
     for o in objs:
         story.append(Paragraph(o, list_style))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
 
     story.append(Paragraph("<b>1. Multi-Stage CI/CD Pipeline Architecture</b>", section_style))
     story.append(Paragraph(
@@ -346,11 +391,11 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
         "automatically triggers on GitHub-hosted runners, isolating environment dependencies and intercepting defects:",
         body_style
     ))
-    story.append(Spacer(1, 3))
+    story.append(Spacer(1, 2))
 
     p_arch = PLOTS_DIR / "exp7_ci_cd_architecture_diagram.png"
     if p_arch.exists():
-        story.append(get_proportional_image(p_arch, target_width=510, max_height=265))
+        story.append(get_large_image(p_arch, target_width=515, max_height=300))
         story.append(Paragraph("<b>Figure 1:</b> Automated Multi-Stage CI/CD Pipeline Architecture and Deployment Workflow.", caption_style))
 
     story.append(Paragraph("<b>1.1 Automated Quality Gates &amp; Fail-Fast Execution</b>", subsection_style))
@@ -364,7 +409,7 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 2: WORKFLOW SPECIFICATION & STAGE TELEMETRY
+    # PAGE 2: WORKFLOW SPECIFICATION & STAGE TELEMETRY (FIGURE 2 LARGE)
     # =========================================================================
     story.append(Paragraph("<b>2. GitHub Actions Workflow Specification (.github/workflows/ci_cd.yml)</b>", section_style))
     story.append(Paragraph(
@@ -417,14 +462,15 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
     ]))
     story.append(t)
     story.append(Paragraph("<b>Table 1:</b> CI/CD Pipeline Stage Execution Telemetry (GitHub Actions Run #3: 35746806946).", caption_style))
+    story.append(Spacer(1, 2))
 
-    # Metrics Plot
+    # Metrics Plot (Large Full Width)
     p_met = PLOTS_DIR / "exp7_ci_pipeline_stages.png"
     if p_met.exists():
-        story.append(get_proportional_image(p_met, target_width=490, max_height=175))
+        story.append(get_large_image(p_met, target_width=515, max_height=230))
         story.append(Paragraph("<b>Figure 2:</b> CI/CD Pipeline Stage Execution Duration and Assertion Distribution (100% Pass Rate).", caption_style))
 
-    story.append(Spacer(1, 3))
+    story.append(Spacer(1, 2))
     story.append(Paragraph("<b>3.1 Declarative Workflow Execution Graph</b>", subsection_style))
     story.append(Paragraph(
         "The workflow enforces job dependency ordering: <code>lint</code> executes first; <code>test</code> and "
@@ -434,8 +480,28 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
         body_style
     ))
 
-    story.append(Spacer(1, 3))
-    story.append(Paragraph("<b>3.2 Data Version Control (DVC) Artifact Tracking &amp; Checksum Parity</b>", subsection_style))
+    story.append(PageBreak())
+
+    # =========================================================================
+    # PAGE 3: RUNNER TELEMETRY & DVC PARITY (FIGURE 3 LARGE)
+    # =========================================================================
+    story.append(Paragraph("<b>4. GitHub Actions Runner Telemetry &amp; Execution Output</b>", section_style))
+    story.append(Paragraph(
+        "Figure 3 presents the terminal telemetry generated by the CI runner dashboard. All 44 Python files passed static "
+        "AST analysis, 11/11 Pytest assertions passed cleanly, model artifact SHA-256 hashes matched expected values, and live "
+        "container endpoints returned HTTP 200 OK responses:",
+        body_style
+    ))
+    story.append(Spacer(1, 2))
+
+    # Figure 3 (Large Full Width)
+    p_term = PLOTS_DIR / "exp7_ci_terminal_execution.png"
+    if p_term.exists():
+        story.append(get_large_image(p_term, target_width=515, max_height=330))
+        story.append(Paragraph("<b>Figure 3:</b> GitHub Actions Cloud Runner Execution Telemetry and Validation Log Output (ubuntu-latest).", caption_style))
+
+    story.append(Spacer(1, 2))
+    story.append(Paragraph("<b>4.1 Data Version Control (DVC) Artifact Tracking &amp; Checksum Parity</b>", subsection_style))
     story.append(Paragraph(
         "The cleaned Twitter Customer Support dataset (100,000 utterances, 28.2 MB) is tracked via pointer file "
         "<code>data/processed/twcs_cleaned.csv.dvc</code> (MD5: <code>9ee7774eca2eee789b89be74820ea2ce</code>, size: 29,569,822 bytes). "
@@ -447,23 +513,8 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 3: RUNNER TELEMETRY & DOCKER SMOKE TEST
+    # PAGE 4: DOCKER SMOKE TEST & HEALTHCHECK (FIGURE 4 LARGE)
     # =========================================================================
-    story.append(Paragraph("<b>4. GitHub Actions Runner Telemetry &amp; Execution Output</b>", section_style))
-    story.append(Paragraph(
-        "Figure 3 presents the terminal telemetry generated by the CI runner dashboard. All 44 Python files passed static "
-        "AST analysis, 11/11 Pytest assertions passed cleanly, model artifact SHA-256 hashes matched expected values, and live "
-        "container endpoints returned HTTP 200 OK responses:",
-        body_style
-    ))
-    story.append(Spacer(1, 2))
-
-    p_term = PLOTS_DIR / "exp7_ci_terminal_execution.png"
-    if p_term.exists():
-        story.append(get_proportional_image(p_term, target_width=490, max_height=240))
-        story.append(Paragraph("<b>Figure 3:</b> GitHub Actions Cloud Runner Execution Telemetry and Validation Log Output (ubuntu-latest).", caption_style))
-
-    story.append(Spacer(1, 3))
     story.append(Paragraph("<b>5. Automated Container Build &amp; Healthcheck Smoke Testing</b>", section_style))
     story.append(Paragraph(
         "Stage 4 packages the microservice inside Docker and spins up an ephemeral container on port 8000. Automated smoke tests "
@@ -472,15 +523,26 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
     ))
     story.append(Spacer(1, 2))
 
+    # Figure 4 (Large Full Width)
     p_dock = PLOTS_DIR / "exp7_docker_smoke_test.png"
     if p_dock.exists():
-        story.append(get_proportional_image(p_dock, target_width=490, max_height=175))
+        story.append(get_large_image(p_dock, target_width=515, max_height=330))
         story.append(Paragraph("<b>Figure 4:</b> Live Docker Container Build, Healthcheck Probing, and Prediction Smoke Test.", caption_style))
+
+    story.append(Spacer(1, 2))
+    story.append(Paragraph("<b>5.1 Container Hardening &amp; Performance Verification</b>", subsection_style))
+    story.append(Paragraph(
+        "The production image adheres to defense-in-depth containerization: (1) Debian 12 Slim base minimizing attack surfaces, "
+        "(2) Pre-compiled OpenMP runtime (<code>libgomp1</code>) enabling vectorized LightGBM inference, (3) Unprivileged execution "
+        "under non-root user <code>appuser</code> (UID 10001), and (4) Sub-150ms latency verification yielding a median p50 of "
+        "<b>21.83 ms</b> and p95 of <b>38.64 ms</b> under continuous automated test evaluation.",
+        body_style
+    ))
 
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 4: TOOLING COMPARISON, DISCUSSION & CONCLUSION
+    # PAGE 5: TOOLING COMPARISON, DISCUSSION & CONCLUSION
     # =========================================================================
     story.append(Paragraph("<b>6. Open-Source CI/CD Tooling Comparison</b>", section_style))
     tools_points = [
@@ -527,7 +589,7 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
     ))
 
     # =========================================================================
-    # PAGE 5: APPENDICES A & B
+    # PAGE 6: APPENDICES A & B
     # =========================================================================
     story.append(PageBreak())
     story.append(Paragraph("<b>Appendix A: Complete GitHub Actions CI/CD Workflow Specification (.github/workflows/ci_cd.yml)</b>", section_style))
@@ -556,7 +618,7 @@ def generate_experiment_7_pdf(evidence: Dict[str, Any], output_pdf_path: str = N
         dvc_content = "$ dvc pull -v\nA       data/processed/twcs_cleaned.csv\n1 file added\n[+] DVC artifact retrieval completed: 100% parity confirmed."
     story.append(Preformatted(dvc_content, code_style))
 
-    doc.build(story)
+    doc.build(story, canvasmaker=NumberedCanvas)
     print(f"[+] Academic PDF Report generated at: {output_pdf_path}")
 
 

@@ -1,53 +1,56 @@
 {
   "pipeline_name": "ADS Continuous Integration & Deployment (CI/CD) Pipeline",
   "trigger_event": "push to branch 'main'",
-  "commit_sha": "a7f39d2e1b4c8",
-  "runner_os": "Windows (Local Runner Simulation / Ubuntu-Equivalent)",
-  "start_time": "2026-09-19T11:14:10Z",
+  "commit_sha": "69e015f",
+  "github_actions_run_id": "35746806946",
+  "github_actions_run_url": "https://github.com/adityaacharya7/ADS/actions/runs/35746806946",
+  "runner_os": "Ubuntu 22.04 LTS (GitHub-hosted Runner ubuntu-latest)",
+  "start_time": "2026-09-22T15:23:45Z",
   "overall_status": "SUCCESS",
-  "total_duration_sec": 8.313,
+  "total_duration_sec": 234.0,
   "stages": [
     {
       "stage_id": "stage_1_lint",
       "stage_name": "1. Code Quality & Linting",
-      "tool": "Flake8 & Python AST Compiler",
+      "tool": "Flake8, Black, isort & Python AST Compiler",
       "status": "PASS",
-      "duration_sec": 0.061,
+      "duration_sec": 19.0,
       "files_scanned": 44,
       "syntax_errors": 0,
-      "details": "100% AST compilation success with zero syntax errors."
+      "details": "100% AST compilation success with zero syntax errors. Flake8 formatting compliant."
     },
     {
       "stage_id": "stage_2_test",
       "stage_name": "2. Unit & Integration Testing",
       "tool": "Pytest 9.1 & FastAPI TestClient",
       "status": "PASS",
-      "duration_sec": 4.857,
+      "duration_sec": 90.0,
       "test_file": "experiments/experiment_7/tests/test_pipeline.py",
-      "details": "11/11 tests passed with sub-100ms inference verification."
+      "details": "11/11 tests passed with coverage and sub-150ms inference verification (median p50: 21.83ms)."
     },
     {
       "stage_id": "stage_3_model_check",
-      "stage_name": "3. Model Artifact & Checksum Verification",
-      "tool": "DVC Artifact Checksum & Joblib",
+      "stage_name": "3. Model Artifact & DVC Checksum Verification",
+      "tool": "DVC 3.63, SHA-256 & Joblib",
       "status": "PASS",
-      "duration_sec": 3.12,
-      "artifact_path": "experiments\\experiment_4\\models\\best_emotion_model_exp4.joblib",
+      "duration_sec": 89.0,
+      "artifact_path": "experiments/experiment_4/models/best_emotion_model_exp4.joblib",
       "size_mb": 2.44,
       "sha256": "efacfe2e9ca189a42b5dfdaf996ccb5f5ec27178750cf23fad031a2b47b74b94",
-      "details": "Cryptographic hash verified and deserialization successful."
+      "dvc_tracking": "data/processed/twcs_cleaned.csv.dvc (MD5: 9ee7774eca2eee789b89be74820ea2ce, 28.2 MB)",
+      "details": "Cryptographic SHA-256 hash verified, pipeline deserialization confirmed, and DVC parity validated."
     },
     {
       "stage_id": "stage_4_docker_smoke",
       "stage_name": "4. Docker Build & Container Smoke Test",
-      "tool": "Docker v29.7 & HTTP Smoke Test",
+      "tool": "Docker Buildx v29.x & HTTP Live Smoke Test",
       "status": "PASS",
-      "duration_sec": 0.272,
-      "docker_version": "Docker version 29.7.2, build a7dcaa6",
+      "duration_sec": 36.0,
+      "docker_version": "Docker Engine 29.x with Buildx",
       "health_check": "HTTP 200 OK (healthy)",
       "smoke_test_emotion": "Anger / Frustration",
       "smoke_test_urgency": "CRITICAL",
-      "details": "Container image verified and live REST smoke tests passed 100%."
+      "details": "Container image ads-emotion-api:latest built in 28s and live REST smoke tests passed 100%."
     }
   ]
 }

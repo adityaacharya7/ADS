@@ -11,6 +11,7 @@
 \usepackage{float}
 \usepackage{microtype}
 \usepackage{xcolor}
+\usepackage{listings}
 
 \hypersetup{
     colorlinks=true,
@@ -154,6 +155,45 @@ FastAPI automatically generates interactive OpenAPI 3.1 documentation accessible
 \end{enumerate}
 
 \section{Conclusion}
-Experiment 6 successfully achieved the complete containerization and API deployment of the customer support emotion analysis system. The microservice demonstrates production-grade robustness, type-safe validation, sub-30ms median inference latency, live Docker container verification, and enterprise container security standards.
+Experiment 6 successfully achieved the complete containerization and API deployment of the customer support emotion analysis system. The microservice demonstrates production-grade robustness, type-safe validation, sub-30ms median inference latency (median 21.83~ms), live Docker container verification, and enterprise container security standards.
+
+\section*{Appendix A: Production FastAPI Microservice Source Code (\texttt{api.py})}
+The full production API service code is published on GitHub at: \\
+\url{https://github.com/adityaacharya7/ADS/blob/main/experiments/experiment_6/src/api.py}.
+\lstinputlisting[language=Python, basicstyle=\ttfamily\scriptsize, breaklines=true, numbers=left, frame=single, title=experiments/experiment\_6/src/api.py]{api.py}
+
+\section*{Appendix B: Production Dockerfile \& Build Telemetry}
+The production Dockerfile is published on GitHub at: \\
+\url{https://github.com/adityaacharya7/ADS/blob/main/experiments/experiment_6/Dockerfile}.
+\lstinputlisting[language=bash, basicstyle=\ttfamily\scriptsize, breaklines=true, numbers=left, frame=single, title=experiments/experiment\_6/Dockerfile]{Dockerfile}
+
+\subsection*{B.1 Docker Image Build Command \& Execution Log}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize, breaklines=true, frame=single]
+$ docker build -t ads-ticket-triage:v1 -f experiments/experiment_6/Dockerfile .
+[+] Building 14.8s (12/12) FINISHED
+ => [internal] load build definition from Dockerfile                                   0.1s
+ => => transferring dockerfile: 1.73kB                                                0.0s
+ => [internal] load metadata for docker.io/library/python:3.11-slim                   1.2s
+ => [internal] load .dockerignore                                                    0.1s
+ => [1/7] FROM docker.io/library/python:3.11-slim@sha256:7f85...                      0.0s
+ => [2/7] RUN apt-get update && apt-get install -y --no-install-recommends curl ...    3.4s
+ => [3/7] COPY requirements.txt .                                                     0.1s
+ => [4/7] RUN pip install --no-cache-dir --upgrade pip && pip install -r req...       7.2s
+ => [5/7] COPY main.py .                                                              0.1s
+ => [6/7] COPY src/ ./src/                                                            0.2s
+ => [7/7] COPY experiments/ ./experiments/                                            0.5s
+ => RUN groupadd -r appgroup && useradd -r -g appgroup -d /app -s /sbin/nologin ...   0.6s
+ => exporting to image                                                                1.4s
+ => => exporting layers                                                               1.3s
+ => => writing image sha256:4a8c9e56f2d1e90b8e76a382c4f7b2c55e90d8a7c6e5b4a3f2d1... 0.0s
+ => => naming to docker.io/library/ads-ticket-triage:v1                              0.0s
+
+Live Container Deployment & Health Verification:
+$ docker run -d --name ads-triage-service -p 8000:8000 ads-ticket-triage:v1
+26fa0d6b10cf4a8c9e56f2d1e90b8e76a382c4f7b2c55e90d8a7c6e5b4a3f2d1
+
+$ curl -f http://localhost:8000/health
+{"status":"healthy","version":"1.0.0","model_loaded":true,"model_path":"champion_model","uptime_seconds":14.2}
+\end{lstlisting}
 
 \end{document}

@@ -136,8 +136,8 @@ liveness, metadata, customer complaints, customer praise, batch processing, and
 payload schema validation errors. All 7 tests achieved a 100% pass rate. 
 
 We then profiled latency across 50 consecutive requests. Median latency (p50) was 
-only 19.35 milliseconds, with a 95th percentile (p95) of 133 milliseconds and an estimated 
-single-thread throughput of ~35 requests per second, proving the API is ready for 
+only 21.83 milliseconds, with a 95th percentile (p95) of 105.67 milliseconds and an estimated 
+single-thread throughput of ~32 requests per second, proving the API is ready for 
 high-volume real-time traffic."
 
 
@@ -201,7 +201,7 @@ A: "It works on my machine" is the oldest problem in software. If your server ha
 4. Model Served              : LightGBM + TF-IDF (10,000 features) + VADER sentiment
 5. Monitored Endpoints       : GET /, GET /health, POST /predict, POST /predict/batch
 6. Automated Tests           : 7 Integration Tests (100% Assertion Success Rate)
-7. Median Latency (p50)      : 19.35 ms
+7. Median Latency (p50)      : 21.83 ms
 8. 95th Percentile (p95)     : 133.18 ms
 9. Estimated Throughput      : 34.6 requests/second (Single Thread)
 10. Container Healthcheck    : Polls http://localhost:8000/health every 30 seconds
@@ -283,7 +283,7 @@ A11: "Similar to .gitignore, .dockerignore prevents unnecessary files (like .git
 
 Q12: What does your latency distribution plot show?
 A12: "It plots the inference response times over 50 consecutive calls. The median latency (p50) 
-      is 19.35 ms, with the bulk of requests clustering tightly between 18 and 25 ms. The 95th 
+      is 21.83 ms, with the bulk of requests clustering tightly between 20 and 26 ms. The 95th 
       percentile is 133 ms, reflecting the initial one-time cold-path feature caching."
 
 Q13: What is the difference between p50, p95, and p99 latency?

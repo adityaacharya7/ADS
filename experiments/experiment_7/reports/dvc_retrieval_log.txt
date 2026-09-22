@@ -1,0 +1,10 @@
+﻿2026-09-22 20:45:04,213 DEBUG: v3.67.1 (pip), CPython 3.11.9 on Windows-10-10.0.26200-SP0
+2026-09-22 20:45:04,213 DEBUG: command: C:\Users\adity\AppData\Local\Programs\Python\Python311\Scripts\dvc pull -v
+2026-09-22 20:45:04,635 DEBUG: Preparing to transfer data from 'C:\Users\adity\Desktop\Projects\ADS\dvc_storage\files\md5' to 'C:\Users\adity\Desktop\Projects\ADS\.dvc\cache\files\md5'
+2026-09-22 20:45:04,635 DEBUG: Preparing to collect status from 'C:\Users\adity\Desktop\Projects\ADS\.dvc\cache\files\md5'
+2026-09-22 20:45:04,635 DEBUG: Collecting status from 'C:\Users\adity\Desktop\Projects\ADS\.dvc\cache\files\md5'
+A       data\processed\twcs_cleaned.csv
+1 file added
+2026-09-22 20:45:04,695 DEBUG: Analytics is enabled.
+2026-09-22 20:45:04,779 DEBUG: Trying to spawn ['daemon', 'analytics', 'C:\\Users\\adity\\AppData\\Local\\Temp\\tmp_tiq4bln', '-v']
+2026-09-22 20:45:04,786 DEBUG: Spawned ['daemon', 'analytics', 'C:\\Users\\adity\\AppData\\Local\\Temp\\tmp_tiq4bln', '-v'] with pid 33272

@@ -1,0 +1,5 @@
+outs:
+- md5: 9ee7774eca2eee789b89be74820ea2ce
+  size: 28210548
+  hash: md5
+  path: twcs_cleaned.csv

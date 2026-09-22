@@ -273,8 +273,8 @@ def generate_drift_benchmark_plot(output_path: Path):
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
 def generate_shap_token_attribution_plot(output_path: Path):
-    """Generates high-resolution visual SHAP token attribution plots for customer support triage."""
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5.5), dpi=300)
+    """Generates high-resolution visual SHAP token attribution plots for customer support triage with large legible text."""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.5, 5.2), dpi=300)
 
     # 1. Critical Urgency Complaint Attribution (Anger / Frustration)
     tokens_neg = ['damaged', 'unacceptable', 'late', 'severely', 'weeks', 'package', 'service']
@@ -282,28 +282,27 @@ def generate_shap_token_attribution_plot(output_path: Path):
     colors_neg = ['#10B981' if s > 0 else '#EF4444' for s in scores_neg]
 
     y_pos1 = np.arange(len(tokens_neg))
-    bars1 = ax1.barh(y_pos1, scores_neg, color=colors_neg, height=0.55, edgecolor='#0F172A', linewidth=0.5)
+    bars1 = ax1.barh(y_pos1, scores_neg, color=colors_neg, height=0.6, edgecolor='#0F172A', linewidth=0.8)
     ax1.set_yticks(y_pos1)
-    ax1.set_yticklabels([f'"{t}"' for t in tokens_neg], fontsize=10, fontweight='bold', fontfamily='monospace')
+    ax1.set_yticklabels([f'"{t}"' for t in tokens_neg], fontsize=11.5, fontweight='bold', fontfamily='monospace')
     ax1.invert_yaxis()
-    ax1.set_xlim(-0.08, 0.38)
-    ax1.axvline(0, color='#64748B', linestyle='--', linewidth=1.0)
-    ax1.set_xlabel("SHAP Impact on Predicted Emotion (Δ Probability)", fontsize=9.5, fontweight='bold')
-    ax1.set_title("Ticket #CRM-202: Anger / Frustration (Conf: 98.4%, Urgency: CRITICAL)\n"
-                  "Utterance: \"My package was severely damaged and 3 weeks late! Unacceptable service!\"",
-                  fontsize=9.5, fontweight='bold', color='#0F172A', pad=10)
-    ax1.grid(axis='x', alpha=0.3, linestyle='--')
+    ax1.set_xlim(-0.09, 0.40)
+    ax1.axvline(0, color='#64748B', linestyle='--', linewidth=1.2)
+    ax1.set_xlabel("SHAP Attribution (Δ Prob)", fontsize=11, fontweight='bold')
+    ax1.set_title("Ticket CRM-202: Anger/Frustration (98.4% Conf)\n\"Package severely damaged and 3 weeks late!\"",
+                  fontsize=10.5, fontweight='bold', color='#0F172A', pad=10)
+    ax1.grid(axis='x', alpha=0.35, linestyle='--')
 
     for bar, val in zip(bars1, scores_neg):
-        offset = 0.008 if val >= 0 else -0.038
+        offset = 0.008 if val >= 0 else -0.045
         ax1.text(val + offset, bar.get_y() + bar.get_height() / 2, f"{val:+.3f}",
-                 va='center', ha='left', fontsize=8.5, fontweight='bold',
+                 va='center', ha='left', fontsize=10.5, fontweight='bold',
                  color='#047857' if val > 0 else '#B91C1C')
 
     # Custom legend for ax1
-    p_green = patches.Patch(color='#10B981', label='Positive Attribution (Drives Emotion)')
-    p_red = patches.Patch(color='#EF4444', label='Negative Attribution (Suppresses Emotion)')
-    ax1.legend(handles=[p_green, p_red], loc='lower right', frameon=True, fontsize=8)
+    p_green = patches.Patch(color='#10B981', label='Positive (Drives Emotion)')
+    p_red = patches.Patch(color='#EF4444', label='Negative (Suppresses Emotion)')
+    ax1.legend(handles=[p_green, p_red], loc='lower right', frameon=True, fontsize=9)
 
     # 2. Low Urgency Praise Attribution (Joy / Gratitude)
     tokens_pos = ['thank', 'fantastic', 'resolving', 'helpful', 'much', 'agent', 'issue']
@@ -311,28 +310,27 @@ def generate_shap_token_attribution_plot(output_path: Path):
     colors_pos = ['#10B981' if s > 0 else '#EF4444' for s in scores_pos]
 
     y_pos2 = np.arange(len(tokens_pos))
-    bars2 = ax2.barh(y_pos2, scores_pos, color=colors_pos, height=0.55, edgecolor='#0F172A', linewidth=0.5)
+    bars2 = ax2.barh(y_pos2, scores_pos, color=colors_pos, height=0.6, edgecolor='#0F172A', linewidth=0.8)
     ax2.set_yticks(y_pos2)
-    ax2.set_yticklabels([f'"{t}"' for t in tokens_pos], fontsize=10, fontweight='bold', fontfamily='monospace')
+    ax2.set_yticklabels([f'"{t}"' for t in tokens_pos], fontsize=11.5, fontweight='bold', fontfamily='monospace')
     ax2.invert_yaxis()
-    ax2.set_xlim(-0.09, 0.40)
-    ax2.axvline(0, color='#64748B', linestyle='--', linewidth=1.0)
-    ax2.set_xlabel("SHAP Impact on Predicted Emotion (Δ Probability)", fontsize=9.5, fontweight='bold')
-    ax2.set_title("Ticket #CRM-108: Joy / Gratitude (Conf: 99.1%, Urgency: LOW)\n"
-                  "Utterance: \"Thank you so much to agent Sarah for resolving my issue! Fantastic service!\"",
-                  fontsize=9.5, fontweight='bold', color='#0F172A', pad=10)
-    ax2.grid(axis='x', alpha=0.3, linestyle='--')
+    ax2.set_xlim(-0.10, 0.42)
+    ax2.axvline(0, color='#64748B', linestyle='--', linewidth=1.2)
+    ax2.set_xlabel("SHAP Attribution (Δ Prob)", fontsize=11, fontweight='bold')
+    ax2.set_title("Ticket CRM-108: Joy/Gratitude (99.1% Conf)\n\"Thank you to agent Sarah! Fantastic service!\"",
+                  fontsize=10.5, fontweight='bold', color='#0F172A', pad=10)
+    ax2.grid(axis='x', alpha=0.35, linestyle='--')
 
     for bar, val in zip(bars2, scores_pos):
-        offset = 0.008 if val >= 0 else -0.038
+        offset = 0.008 if val >= 0 else -0.045
         ax2.text(val + offset, bar.get_y() + bar.get_height() / 2, f"{val:+.3f}",
-                 va='center', ha='left', fontsize=8.5, fontweight='bold',
+                 va='center', ha='left', fontsize=10.5, fontweight='bold',
                  color='#047857' if val > 0 else '#B91C1C')
 
-    ax2.legend(handles=[p_green, p_red], loc='lower right', frameon=True, fontsize=8)
+    ax2.legend(handles=[p_green, p_red], loc='lower right', frameon=True, fontsize=9)
 
     plt.suptitle("Explainable AI (XAI): Local Token-Level Feature Attribution (SHAP Leave-One-Out Engine)",
-                 fontsize=12, fontweight='bold', color='#0F172A', y=1.02)
+                 fontsize=12.5, fontweight='bold', color='#0F172A', y=1.02)
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()

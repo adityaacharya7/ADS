@@ -77,7 +77,7 @@ class NumberedCanvas(canvas.Canvas):
 # 2. IMAGE SCALING UTILITIES (LARGE FULL-WIDTH RENDERING)
 # ------------------------------------------------------------------------------
 
-def get_large_image(image_path: Path, target_width: float = 515, max_height: float = 270) -> Image:
+def get_large_image(image_path: Path, target_width: float = 515, max_height: float = 360) -> Image:
     """Creates a large ReportLab Image scaled to maximize width and legibility."""
     if not image_path.exists():
         raise FileNotFoundError(f"Image not found: {image_path}")
@@ -511,13 +511,13 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     # FIGURE 1 (LARGE FULL WIDTH)
     p_ui = PLOTS_DIR / "exp8_ui_intake.png"
     if p_ui.exists():
-        story.append(get_large_image(p_ui, target_width=515, max_height=255))
+        story.append(get_large_image(p_ui, target_width=515, max_height=310))
         story.append(Paragraph("<b>Figure 1:</b> Live Streamlit Operations Portal: Customer Ticket Intake Interface and Real-Time Triage Preview.", caption_style))
 
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 2: REAL-TIME INFERENCE (FIGURE 2 LARGE) & TOKEN-LEVEL SHAP ATTRIBUTION (FIGURE 3 LARGE)
+    # PAGE 2: REAL-TIME INFERENCE & INTAKE EVALUATION (FIGURE 2 LARGE FULL WIDTH)
     # =========================================================================
     story.append(Paragraph("<b>2. Real-Time Model Inference, Urgency Triage &amp; SLA Management</b>", section_style))
     story.append(Paragraph(
@@ -537,22 +537,26 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     # FIGURE 2 (LARGE FULL WIDTH)
     p_inf = PLOTS_DIR / "exp8_inference_crm202.png"
     if p_inf.exists():
-        story.append(get_large_image(p_inf, target_width=515, max_height=205))
+        story.append(get_large_image(p_inf, target_width=515, max_height=345))
         story.append(Paragraph("<b>Figure 2:</b> Live AI Inference Execution on Ticket CRM-202: 98% Confidence Disappointment/Sadness Classification &amp; Dynamic SLA Routing.", caption_style))
 
     story.append(Spacer(1, 1.5))
     story.append(Paragraph("<b>2.1 Explainable AI (XAI): Token-Level SHAP Feature Attribution Analysis</b>", subsection_style))
     story.append(Paragraph(
         "Under EU AI Act Article 13 transparency requirements, the system executes real-time token attribution using a leave-one-out "
-        "perturbation kernel: <code>&Delta;P(emotion) = P(emotion | Text) - P(emotion | Text \ {token})</code> in &lt;15ms:",
+        "perturbation kernel: <code>&Delta;P(emotion) = P(emotion | Text) - P(emotion | Text \\ {token})</code> in &lt;15ms to eliminate "
+        "black-box opacity for support supervisors.",
         body_style
     ))
-    story.append(Spacer(1, 1))
 
-    # FIGURE 3 (LARGE FULL WIDTH)
+    story.append(PageBreak())
+
+    # =========================================================================
+    # PAGE 3: TOKEN SHAP WATERFALL (FIGURE 3 LARGE) & QUEUE WITH SLA (FIGURE 4 LARGE)
+    # =========================================================================
     p_shp = PLOTS_DIR / "exp8_shap_token_attribution.png"
     if p_shp.exists():
-        story.append(get_large_image(p_shp, target_width=515, max_height=205))
+        story.append(get_large_image(p_shp, target_width=515, max_height=270))
         story.append(Paragraph("<b>Figure 3:</b> Token-Level SHAP Feature Attribution Plots: Contrasting High-Priority Customer Grievance (CRM-202) against Positive Feedback (CRM-108).", caption_style))
 
     story.append(Paragraph(
@@ -561,12 +565,8 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
         "and <i>'great'</i> (+0.335) drive Joy (99.1%), confirming affective token calibration.",
         body_style
     ))
+    story.append(Spacer(1, 1))
 
-    story.append(PageBreak())
-
-    # =========================================================================
-    # PAGE 3: QUEUE WITH SLA (FIGURE 4), PII MASKING (FIGURE 5) & AUDIT TRAIL (FIGURE 6)
-    # =========================================================================
     story.append(Paragraph("<b>2.2 Real-Time Priority Ticket Queue &amp; SLA Countdown</b>", subsection_style))
     story.append(Paragraph(
         "Tickets are dynamically sorted by closest SLA due time with live remaining minute countdowns and supervisor filters:",
@@ -577,10 +577,14 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     # FIGURE 4 (LARGE FULL WIDTH)
     p_que = PLOTS_DIR / "exp8_queue_sla.png"
     if p_que.exists():
-        story.append(get_large_image(p_que, target_width=515, max_height=165))
+        story.append(get_large_image(p_que, target_width=515, max_height=275))
         story.append(Paragraph("<b>Figure 4:</b> Real-Time Operational Queue with Live SLA Countdown (60 min remaining), Urgency Badges &amp; Keyword Search.", caption_style))
 
-    story.append(Spacer(1, 1.5))
+    story.append(PageBreak())
+
+    # =========================================================================
+    # PAGE 4: PRIVACY PRESERVATION (FIGURE 5 LARGE) & AUDIT HISTORY
+    # =========================================================================
     story.append(Paragraph("<b>3. Automated Privacy Preservation (PII Scrubbing) &amp; Human Oversight</b>", section_style))
     story.append(Paragraph(
         "To satisfy GDPR Art. 5, deterministic regex scrubbing sanitizes sensitive emails, phone numbers, and payment cards prior to persistence. "
@@ -592,28 +596,28 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     # FIGURE 5 (LARGE FULL WIDTH)
     p_pii = PLOTS_DIR / "exp8_pii_masking_hitl.png"
     if p_pii.exists():
-        story.append(get_large_image(p_pii, target_width=515, max_height=165))
+        story.append(get_large_image(p_pii, target_width=515, max_height=345))
         story.append(Paragraph("<b>Figure 5:</b> Automated PII Redaction (<code>sarah.miller92@gmail.com</code> &rarr; <code>[EMAIL]</code>) and Human-in-the-Loop Review Controls.", caption_style))
 
     story.append(Spacer(1, 1.5))
     story.append(Paragraph("<b>3.1 Immutable Audit Event History &amp; Ticket Resolution Lifecycle</b>", subsection_style))
     story.append(Paragraph(
-        "Every lifecycle state change (creation, triage adjustment, assignment, resolution) is logged in an append-only audit ledger:",
+        "Every lifecycle state change (creation, triage adjustment, assignment, resolution) is logged in an append-only audit ledger "
+        "satisfying EU AI Act Level 2 requirements for algorithmic traceability and forensic verification across support workflows.",
         body_style
     ))
-    story.append(Spacer(1, 0.5))
-
-    # FIGURE 6 (LARGE FULL WIDTH)
-    p_aud = PLOTS_DIR / "exp8_audit_trail_resolved.png"
-    if p_aud.exists():
-        story.append(get_large_image(p_aud, target_width=515, max_height=165))
-        story.append(Paragraph("<b>Figure 6:</b> Immutable Audit Trail History (<code>CREATED</code>, <code>UPDATED</code>) and Live Ticket Resolution Confirmation Toast.", caption_style))
 
     story.append(PageBreak())
 
     # =========================================================================
-    # PAGE 4: RESPONSIBLE AI FRAMEWORK, COMPLIANCE CHECKLIST & FAIRNESS AUDIT
+    # PAGE 5: AUDIT TRAIL (FIGURE 6 LARGE) & RESPONSIBLE AI GOVERNANCE CHECKLIST
     # =========================================================================
+    p_aud = PLOTS_DIR / "exp8_audit_trail_resolved.png"
+    if p_aud.exists():
+        story.append(get_large_image(p_aud, target_width=515, max_height=345))
+        story.append(Paragraph("<b>Figure 6:</b> Immutable Audit Trail History (<code>CREATED</code>, <code>UPDATED</code>) and Live Ticket Resolution Confirmation Toast.", caption_style))
+
+    story.append(Spacer(1, 1.5))
     story.append(Paragraph("<b>4. Responsible AI Governance Charter &amp; Compliance Checklist</b>", section_style))
     story.append(Paragraph(
         "Codified in <code>Responsible_AI.md</code>, the system satisfies ethical and operational standards aligned with the EU AI Act, "
@@ -699,7 +703,11 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     story.append(t1)
     story.append(Paragraph("<b>Table 1:</b> Responsible AI Governance &amp; Compliance Audit Checklist.", caption_style))
 
-    story.append(Spacer(1, 2))
+    story.append(PageBreak())
+
+    # =========================================================================
+    # PAGE 6: FAIRNESS AUDIT, XAI WATERFALL & OPERATIONAL ANALYTICS (FIGURE 7 LARGE)
+    # =========================================================================
     story.append(Paragraph("<b>4.1 Algorithmic Fairness Audit &amp; Mitigation Results (Fairlearn)</b>", section_style))
     story.append(Paragraph(
         "Using Microsoft Fairlearn, the urgency triage classifier was evaluated across customer account tiers (<code>Standard</code> vs. <code>VIP</code>). "
@@ -773,26 +781,20 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     story.append(t2)
     story.append(Paragraph("<b>Table 2:</b> Algorithmic Fairness Audit &amp; Mitigation Results across Account Tiers.", caption_style))
 
-    story.append(Spacer(1, 2))
+    story.append(Spacer(1, 1.5))
     story.append(Paragraph("<b>4.2 Explainable AI (XAI) Token Waterfall Attribution</b>", section_style))
     story.append(Paragraph(
         "To eliminate black-box opacity for support personnel, the system incorporates a localized feature attribution kernel that calculates "
-        "the marginal probability impact &Delta;P of each word token: <code>&Delta;P(emotion) = P(emotion | Text) - P(emotion | Text \ {token})</code>. "
-        "Word tokens driving the prediction positively (e.g., <i>'heartbroken'</i>, <i>'disappointed'</i>) are rendered as green bars, while negative "
-        "contributors are marked in red, providing support agents with immediate context in &lt;15ms.",
+        "the marginal probability impact &Delta;P of each word token: <code>&Delta;P(emotion) = P(emotion | Text) - P(emotion | Text \\ {token})</code>. "
+        "Word tokens driving the prediction positively are rendered as green bars, while negative contributors are marked in red.",
         body_style
     ))
 
-    story.append(PageBreak())
-
-    # =========================================================================
-    # PAGE 5: OPERATIONAL ANALYTICS (FIGURE 7 LARGE) & DATA DRIFT ALERT (FIGURE 8 LARGE)
-    # =========================================================================
+    story.append(Spacer(1, 1.5))
     story.append(Paragraph("<b>5. Operational Analytics &amp; Continuous Data Drift Telemetry</b>", section_style))
     story.append(Paragraph(
         "The Analytics dashboard tracks live queue throughput, active tickets, SLA compliance percentage, and AI correction rates. "
-        "Simultaneously, the statistical drift engine continuously monitors production feature distributions against the 5,000-message "
-        "TWCS baseline across text length and VADER sentiment compound scores.",
+        "Simultaneously, the statistical drift engine continuously monitors production feature distributions against the 5,000-message baseline.",
         body_style
     ))
     story.append(Spacer(1, 1))
@@ -800,10 +802,14 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     # FIGURE 7 (LARGE FULL WIDTH)
     p_anl = PLOTS_DIR / "exp8_analytics_kpis.png"
     if p_anl.exists():
-        story.append(get_large_image(p_anl, target_width=515, max_height=215))
+        story.append(get_large_image(p_anl, target_width=515, max_height=330))
         story.append(Paragraph("<b>Figure 7:</b> Operational Analytics Dashboard: Live Summary KPIs, Priority Breakdown Bar Chart &amp; Queue Status Donut Chart.", caption_style))
 
-    story.append(Spacer(1, 1.5))
+    story.append(PageBreak())
+
+    # =========================================================================
+    # PAGE 7: POPULATION STABILITY INDEX (FIGURE 8 LARGE) & CLOUD BLUEPRINT
+    # =========================================================================
     story.append(Paragraph("<b>5.1 Population Stability Index (PSI) Mathematical Formulation &amp; Live Telemetry Alert</b>", subsection_style))
     story.append(Paragraph(
         "The Population Stability Index quantifies distributional shift across 10 quantile bins: "
@@ -817,7 +823,7 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     # FIGURE 8 (LARGE FULL WIDTH)
     p_drf = PLOTS_DIR / "exp8_drift_psi_alert.png"
     if p_drf.exists():
-        story.append(get_large_image(p_drf, target_width=515, max_height=200))
+        story.append(get_large_image(p_drf, target_width=515, max_height=260))
         story.append(Paragraph("<b>Figure 8:</b> Live AI Health Telemetry &amp; Automated Critical Drift Alert (Length PSI: 9.665, Sentiment PSI: 10.202).", caption_style))
 
     story.append(Paragraph(
@@ -827,12 +833,8 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
         "and robustness of the automated alerting mechanism.",
         body_style
     ))
+    story.append(Spacer(1, 1.5))
 
-    story.append(PageBreak())
-
-    # =========================================================================
-    # PAGE 6: CLOUD DEPLOYMENT, PORTFOLIO SYNTHESIS, VIVA VOCE & CONCLUSION
-    # =========================================================================
     story.append(Paragraph("<b>6. Cloud Deployment Blueprint (Docker &amp; Render PaaS)</b>", section_style))
     story.append(Paragraph(
         "The production microservice (<code>ADS_Main_Production/</code>) is deployed to Render PaaS with automated continuous delivery:",
@@ -845,8 +847,12 @@ def generate_experiment_8_pdf(output_pdf_path: str = None):
     ]
     for d in dep_items:
         story.append(Paragraph(d, list_style))
-    story.append(Spacer(1, 1))
 
+    story.append(PageBreak())
+
+    # =========================================================================
+    # PAGE 8: INFRASTRUCTURE TELEMETRY, PORTFOLIO SYNTHESIS, VIVA VOCE & CONCLUSION
+    # =========================================================================
     story.append(Paragraph("<b>6.1 Production Cloud Infrastructure Telemetry &amp; Render PaaS State</b>", subsection_style))
     story.append(Paragraph(
         "The application is published on Render PaaS under service name <code>supportflow-ai</code> (<a href='https://adsproject.onrender.com'>https://adsproject.onrender.com</a>) "
